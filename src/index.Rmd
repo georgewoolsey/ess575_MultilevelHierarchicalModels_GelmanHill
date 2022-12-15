@@ -1,0 +1,97 @@
+--- 
+title: "Data Analysis Using Regression and Multilevel/Hierarchical Models"
+author: "Gelman and Hill, 2007"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: 
+  bookdown::gitbook:
+    includes:
+      in_header: header.html
+documentclass: book
+book_filename: "MLM_GelmanHill"
+output_dir: "../docs"
+language:
+  ui:
+    chapter_name: "Chapter "
+delete_merged_file: true
+bibliography: [packages.bib]
+biblio-style: apalike
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/research-institute-for-nature-and-forest.csl
+suppress-bibliography: false
+lang: en-US
+zotero: true
+link-citations: true
+description: "Using the bookdown package to write a book for Data Analysis Using Regression and Multilevel/Hierarchical Models. The output format for this example is bookdown::gitbook."
+---
+
+# Source
+
+Gelman, A., & Hill, J. (2007). *Data Analysis Using Regression and Multilevel/Hierarchical Models*. Cambridge University Press.
+
+# Motivation
+
+The following multilevel modelling exercises are from [Gelman & Hill (2007)](http://www.stat.columbia.edu/~gelman/arm/). The objective is to learn how to fit models with different group- and treatment-level hierarchies allowing for many varying intercepts and slopes.
+
+*We consider a multilevel model to be a regression (a linear or generalized linear model) in which the parameters (i.e., the regression coefficients) are given a probability model. This second-level model has parameters of its own (i.e., hyperparameters of the model) which are also estimated from data.* (p. 1) 
+
+The two key parts of a multilevel model are: 
+
+1) varying coefficients, and 
+2) a model for those varying coefficients (which can itself include group-level predictors). 
+
+Classical regression can sometimes accommodate varying coefficients by using indicator variables. The feature that distinguishes multilevel models from classical regression is in the modeling of the variation between groups.
+
+Another, succinct definition:
+
+*We view multilevel models either as regressions with potentially large numbers of coefficients that are themselves modeled, or as regressions with coefficients that can vary by group.* (p. 235)
+
+![Varying slopes and intercepts](../data/slopes_intercepts.jpg "slopes_intercepts")
+(p. 238)
+
+Multilevel regression can be thought of as a method for compromising between the two extremes of excluding a categorical predictor from a model (complete pooling), or estimating separate models within each level of the categorical predictor (no pooling). (p. 252)
+
+## Some definitions and details
+
+*Non-nested models* included cases in which a given dataset can be structured into groups in more than one way. For example, persons in a national survey can be divided by demographics or by states. Responses in a psychological experiment might be classified by person (experimental subject), experimental condition, and time (p. 279)
+
+*Why we avoid the term “random effects.”* (p. 2-3)
+Multilevel models are often known as random-effects or mixed-effects models. The regression coefficients that are being modeled are called *random effects*, in the sense that they are considered random outcomes of a process identified with the model that is predicting them. In contrast, *fixed effects* correspond either to parameters that do not vary (for example, fitting the same regresslon line for each of the schools) or to parameters that vary but are not modeled themselves (for example, fitting a least squares regression model with various predictors, including indicators for the schools). A *mixed-effects* model includes both fixed and random effects; for example, in the varying-intercept model below, the varying intercepts $\alpha_j$ have a group-level model, but $\beta$ is fixed and does not vary by group.
+
+\begin{align*}
+y_i &= \alpha_{j[i]} + \beta\cdot x_i + \epsilon_i \\
+\alpha_{j} &= a + b\cdot u_j + \eta_j
+\end{align*}
+
+for students $i = 1, \cdots,n$ and schools $j = 1, \cdots,J$
+
+Fixed effects can be viewed as special cases of random effects, in which the higher-level variance (in model above, this would be $\sigma^{2}_{\alpha}$) is set to 0 or $\infty$. Hence, in our framework, all regression parameters are "random"” and the term "multilevel" is all-encompassing. As we discuss on page 245, we find the terms "fixed," "random," and "mixed" effects to be confusing and often misleading, and so we avoid their use.
+
+# The data
+
+I focus on exercises utilizing the `radon` data:
+
+*our goal in analyzing these data was to estimate the distribution of radon levels in each of the approximately 3000 counties in the United States, so that homeowners could make decisions about measuring or remediating the radon in their houses based on the best available knowledge of local conditions. For the purpose of this analysis, the data were structured hierarchically: houses within counties. If we were to analyze multiple measurements within houses, there would be a three-level hierarchy of measurements, houses, and counties. In performing the analysis, we had an important predictor—the floor on which the measurement was taken, either basement or first floor; radon comes from underground and can enter more easily when a house is built into the ground. We also had an important county-level predictor—a measurement of soil uranium that was available at the county level...The hierarchical model allows us to fit a regression model to the individual measurements while accounting for systematic unexplained variation among the 3000 counties.* (p. 3)
+
+
+```{r include=FALSE, echo=FALSE}
+knitr::write_bib(c(
+  .packages(),
+  'bookdown'
+  , 'knitr'
+  , 'rmarkdown'
+  , "tidyverse"
+  , "lubridate"
+  , "viridis"
+  , "scales"
+  , "latex2exp"
+  # visualization
+  , "cowplot"
+  , "kableExtra"
+  # Linear Mixed-Effects Models 
+  , "lme4"
+  # jags and bayesian
+  , "rjags"
+  , "MCMCvis"
+  , "HDInterval"
+), 'packages.bib')
+```
