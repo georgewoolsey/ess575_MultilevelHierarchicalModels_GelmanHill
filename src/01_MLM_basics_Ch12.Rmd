@@ -8,7 +8,7 @@ knitr::opts_chunk$set(
   echo = TRUE
   , warning = FALSE
   , message = FALSE
-  , results='hide'
+  # , results='hide'
   , fig.width = 10
   , fig.height = 7
 )
@@ -311,7 +311,7 @@ lm(data = radon_mn, formula = y ~ x + factor(county_index) - 1) %>%
 The simplest multilevel model for the radon data with the floor predictor can be written as:
 
 \begin{align*}
-y_i \sim \textrm{N}(\alpha_{j[i]} + \beta\cdot x_i, \sigma^2) \\
+y_i &\sim \textrm{N}(\alpha_{j[i]} + \beta\cdot x_i, \sigma^2) \\
 \textrm{for} &\; i = 1, \cdots, n
 \end{align*}
 
@@ -326,12 +326,15 @@ with their mean $\mu_{\alpha}$ and standard deviation $\sigma^{2}_{\alpha}$ esti
 
 ### Using `lme4::lmer`
 
+*Approximate routines such as lmer() tend to work well when the sample size and number of groups is moderate to large, as in the radon models. When the number of groups is small, or the model becomes more complicated, it can be useful to switch to Bayesian inference, using the Bugs program, to better account for uncertainty in model fitting.* (p. 262)
+
 ```{r, results='asis'}
 ## Varying-intercept model w/ no predictors
 M0 <- lme4::lmer(data = radon_mn, formula = y ~ 1 + (1 | county))
 summary(M0)
 
 ## Including x as a predictor
+# we can allow the slope to vary by specifying (1+x|county)
 M1 <- lme4::lmer(data = radon_mn, formula = y ~ x + (1 | county))
 summary(M1)
 
@@ -496,7 +499,7 @@ MCMCvis::MCMCsummary(mlm_intrcpt_pred, params = "alpha") %>%
   dplyr::bind_cols(coef(M1)$county[1:8,1]) %>% 
   dplyr::rename(Bayesian=1, LMM=2) %>% 
   kableExtra::kable(
-    caption = "alpha predictions Bayesian vs. LMM"
+    caption = "alpha predictions Bayesian vs. LMM (lme4::lmer)"
     , digits = 5
   ) %>% 
   kableExtra::kable_styling(font_size = 12)
@@ -504,7 +507,7 @@ MCMCvis::MCMCsummary(mlm_intrcpt_pred, params = "alpha") %>%
 
 #### Sort the $\alpha_{j}$ by number of obs.
 
-Replicate Figure 12.1 (b) (p.253)
+Replicate Figure 12.1 (b) for the partial pooling with predictors model (p.253)
 
 ```{r}
 dta_temp <- dplyr::bind_cols(
@@ -544,3 +547,42 @@ ggplot(dta_temp) +
     , panel.grid = element_blank()
   )
 ```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
+remove(list = ls()[grep("_temp",ls())])
+gc()
+```
+
+## Group-level predictors (p. 265)
+
+Adding a group-level predictor to improve inference for group coefficients $\alpha_j$. This multilevel model includes predictors at the group (e.g. county) as well as the individual (e.g. house) level.
+
+\begin{align*}
+y_i &\sim \textrm{N}(\alpha_{j[i]} + \beta\cdot x_i, \sigma^2) \; \textrm{for} \; i = 1, \cdots, n \\
+\alpha_j &\sim \textrm{N}(\gamma_{0} + \gamma_{1} \cdot u_j, \sigma^{2}_{\alpha}) \; \textrm{for} \; j = 1, \cdots, J
+\end{align*}
+
+where $x_i$ is the house-level first-floor indicator and $u_j$ is the county-level uranium measure.
+
+### Using `lme4::lmer`
+
+*Approximate routines such as lmer() tend to work well when the sample size and number of groups is moderate to large, as in the radon models. When the number of groups is small, or the model becomes more complicated, it can be useful to switch to Bayesian inference, using the Bugs program, to better account for uncertainty in model fitting.* (p. 262)
+
+The lmer() function only accepts predictors at the individual level, so we have converted $u_j$ to $u^{full}_i = u_{j[i]}$ (with the variable county playing the role of the indexing $j[i]$), to pull out the uranium level of the county where house $i$ is located
+
+```{r}
+srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
+cty <- cty <- read.table ("http://www.stat.columbia.edu/~gelman/arm/examples/radon/cty.dat", header=TRUE, sep=",")
+usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]
+usa.rows <- match (unique(srrs2.fips[mn]), usa.fips)
+uranium <- cty[usa.rows,"Uppm"]
+u <- log (uranium)
+
+
+u.full <- u[county]
+M2 <- lmer (y ~ x + u.full + (1 | county))
+display (M2)
+```
+
+
+
