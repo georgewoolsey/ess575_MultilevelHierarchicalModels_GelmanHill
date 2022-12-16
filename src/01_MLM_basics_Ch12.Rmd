@@ -30,6 +30,7 @@ library(cowplot)
 library(kableExtra)
 # Linear Mixed-Effects Models 
 library(lme4)
+library(broom.mixed)
 # jags and bayesian
 library(rjags)
 library(MCMCvis)
@@ -41,8 +42,9 @@ set.seed(11)
  
 ## Load data
 
-```{r}
-srrs2 <- read.table ("../data/radon/srrs2.dat", header=TRUE, sep=",")
+```{r, results='asis'}
+# srrs2 <- read.table ("../data/radon/srrs2.dat", header=TRUE, sep=",")
+srrs2 <- read.table ("http://www.stat.columbia.edu/~gelman/arm/examples/radon/srrs2.dat", header=TRUE, sep=",")
 srrs2 %>% 
   dplyr::glimpse()
 # filter MN and create vars
@@ -68,10 +70,22 @@ radon_mn %>% dplyr::count(county_index, county) %>% dplyr::slice_head(n=10) %>%
   kableExtra::column_spec(1, bold = FALSE, width = "3em")
 ```
 
-## Varying-intercept model, no predictors (p. 253)
+## Varying-intercept multilevel model, no predictors (p. 253)
+
+$$
+y_i = \alpha_{j[i]} + \epsilon_i
+$$
+
+where $j[i]$ is the county corresponding to house $i$
 
 Partial-pooling estimates from a multilevel model: 
-For this simple scenario with no predictors, the multilevel estimate for a given county $j$ can be approximated as a weighted average of the mean of the observations in the county (the unpooled estimate, $\overline{y}_j$) and the mean over all counties (the completely pooled estimate, $\overline{y}_{all}$):
+For this simple scenario with no predictors, the multilevel estimate for a given county $j$ can be approximated as a weighted average of the mean of the observations in the county (the unpooled estimate, $\overline{y}_j$) and the mean over all counties (the completely pooled estimate, $\overline{y}_{all}$).
+
+The weighted average reflects the relative amount of information available about the individual county, on one hand, and the average of all the counties, on the other: 
+
+* Averages from counties with smaller sample sizes carry less information, and the weighting pulls the multilevel estimates closer to the overall state average. In the limit, if $n_j = 0$, the multilevel estimate is simply the overall average, $\overline{y}_{all}$.
+* Averages from counties with larger sample sizes carry more information, and the corresponding multilevel estimates are close to the county averages. In the limit as $n_j \to \infty$, the multilevel estimate is simply the county average, $\overline{y}_{j}$ . 
+* In intermediate cases, the multilevel estimate lies between the two extremes.
 
 ### Data and Initial conditions
 
@@ -191,9 +205,14 @@ gc()
 
 ### Summary of the marginal posterior distributions of the parameters
 
-```{r}
+```{r, results='asis'}
 # summary
-MCMCvis::MCMCsummary(mlm_intrcpt_nopred, params = params[params != "alpha"])
+MCMCvis::MCMCsummary(mlm_intrcpt_nopred, params = params[params != "alpha"]) %>% 
+  kableExtra::kable(
+    caption = "Bayesian: arying-intercept multilevel model, no predictors"
+    , digits = 5
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12)
 ```
 
 ### Make a horizontal caterpillar plot for the $\alpha_{j}$
@@ -241,35 +260,287 @@ ggplot(dta_temp) +
   geom_point(
     mapping = aes(x = n_low_hi, y = alpha50)
   ) +
-  scale_y_continuous(limits = c(0,3.2)) +
+  geom_linerange(
+    mapping = aes(x = n_low_hi, ymin = alpha25, ymax = alpha75)
+  ) +
+  scale_y_continuous(limits = c(0,2.5)) +
   ylab(latex2exp::TeX("$\\hat{\\alpha}_{j}$")) + 
   xlab("# Obs.") +
+  labs(
+    title = "Median model intercept prediction for each county (j)"
+    , subtitle = "Varying-intercept multilevel model, no predictors"
+  ) +
   theme_bw() + 
   theme(
     axis.text.x = element_blank()
+    , axis.ticks.x = element_blank()
+    , panel.grid = element_blank()
   )
-  
-# median of predictions
-
-
-## Figure 12.1 (b)
-
-plot (sample.size.jittered, mlm.radon.nopred$median$a, cex.lab=.9, cex.axis=1,
-      xlab="sample size in county j",
-      ylab="avg. log radon in county j",
-      pch=20, log="x", cex=.3, mgp=c(1.5,.5,0),
-      ylim=c(0,3.2), yaxt="n", xaxt="n")
-axis (1, c(1,3,10,30,100), cex.axis=.9, mgp=c(1.5,.5,0))
-axis (2, seq(0,3), cex.axis=.9, mgp=c(1.5,.5,0))
-for (j in 1:J){
-  lines (rep(sample.size.jittered[j],2),
-         mlm.radon.nopred$median$a[j] + c(-1,1)*mlm.radon.nopred$sd$a[j],
-      lwd=.5)
-}
-abline(h=mlm.radon.nopred$median$mu.a)
-points(sample.size.jittered[36],mlm.radon.nopred$median$a[36],cex=4)#,col="red")
-title("Multilevel model",cex.main=.9, line=1)
-
-
 ```
 
+
+## Classical no-pooling with predictors (p. 254)
+
+This section considers partial pooling for a model with unit-level predictors. In this scenario, no pooling might refer to fitting a separate regression model within each group. However, a less extreme and more common option that we also sometimes refer to as "no pooling" is a model that includes group indicators and estimates the model classically.
+
+### Fit no-pooling model with `lm`
+
+$$
+y_i = \alpha_{j[i]} + \beta\cdot x_i + \epsilon_i
+$$
+
+where $j[i]$ is the county corresponding to house $i$; and $x$ is the floor of measurement (0 = basement, 1 = 1st floor...)
+
+To fit the no-pooling model in R, we include the county index (a variable named county that takes on values between 1 and 85) as a factor in the regression—thus, predictors for the 85 different counties. We add “−1” to the regression formula to remove the constant term, so that all 85 counties are included. Otherwise, R would use county 1 as a baseline. 
+
+In the no-pooling model, the $\alpha_{j}$'s are set to the classical least squares estimates, which correspond to the fitted intercepts in a model run separately in each county (with the constraint that the slope coefficient equals $\beta$ in all models).
+
+```{r, results='asis'}
+lm(data = radon_mn, formula = y ~ x + factor(county_index) - 1) %>% 
+  broom::tidy() %>% 
+  dplyr::slice_head(n=10) %>% 
+  kableExtra::kable(
+    caption = "no-pooling model includes county indicators"
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12) %>% 
+  kableExtra::column_spec(1, bold = FALSE, width = "3em")
+```
+
+## MLM Partial pooling with predictors (p. 254)
+
+The simplest multilevel model for the radon data with the floor predictor can be written as:
+
+\begin{align*}
+y_i \sim \textrm{N}(\alpha_{j[i]} + \beta\cdot x_i, \sigma^2) \\
+\textrm{for} &\; i = 1, \cdots, n
+\end{align*}
+
+which looks like the no-pooling model but with one key difference. In the no-pooling model, the $\alpha_{j}$'s are set to the classical least squares estimates, which correspond to the fitted intercepts in a model run separately in each county (with the constraint that the slope coefficient equals $\beta$ in all models). In the multilevel model, a "soft constraint" is applied to the $\alpha_{j}$'s: they are assigned a probability distribution,
+
+\begin{align*}
+\alpha_j &\sim \textrm{N}(\mu_{\alpha}, \sigma^{2}_{\alpha}) \\
+\textrm{for} &\; j = 1, \cdots, J
+\end{align*}
+
+with their mean $\mu_{\alpha}$ and standard deviation $\sigma^{2}_{\alpha}$ estimated from the data. The distribution (12.3) has the effect of pulling the estimates of $\alpha_{j}$ toward the mean level $\mu_{\alpha}$, but not all the way. (p. 257)
+
+### Using `lme4::lmer`
+
+```{r, results='asis'}
+## Varying-intercept model w/ no predictors
+M0 <- lme4::lmer(data = radon_mn, formula = y ~ 1 + (1 | county))
+summary(M0)
+
+## Including x as a predictor
+M1 <- lme4::lmer(data = radon_mn, formula = y ~ x + (1 | county))
+summary(M1)
+
+#estimated regression coefficicents
+coef(M1)$county[1:3,1]
+
+# fixed and random effects
+fixef(M1)
+ranef(M1)$county[1:3,1]
+
+# check
+fixef(M1)[[1]] + ranef(M1)$county[1,1]
+coef(M1)$county[1,1]
+```
+
+### Bayesian
+
+#### Data and Initial conditions
+
+```{r}
+# varying-intercept model, no predictors
+## data for jags
+data <- list(
+  n = nrow(radon_mn)
+  , J = radon_mn$county %>% unique() %>% length()
+  , y = radon_mn$log.radon %>% as.double()
+  , x = radon_mn$x %>% as.double()
+  , county = radon_mn$county_index %>% as.double()
+)
+## inits for jags
+inits <- function(){
+  list(
+    alpha = rnorm(n = data$J, mean = 0, sd = 1) # county-level intercept (n = length of # counties)
+    , beta = rnorm(1, mean = 0, sd = 1)
+    , mu.alpha = rnorm(n = 1, mean = 0, sd = 1)
+    , sigma.alpha = runif(n = 1, min = 0, max = 1)
+    , sigma.y = runif(n = 1, min = 0, max = 1)
+  )
+}
+# define parameters to return from MCMC
+params <- c ("alpha", "beta", "mu.alpha", "sigma.y", "sigma.alpha")
+```
+
+#### JAGS Model
+
+Write out the JAGS code for the model.
+
+```{r, eval=FALSE}
+## JAGS Model
+model {
+  ###########################
+  # priors
+  ###########################
+  # alpha priors
+    mu.alpha ~ dnorm(0, .0001)
+    tau.alpha <- 1/sigma.alpha^2
+    sigma.alpha ~ dunif(0, 100)
+    for (j in 1:J){
+      alpha[j] ~ dnorm(mu.alpha, tau.alpha)
+    }
+  # beta
+    beta ~ dnorm(0, .0001)
+  # y priors
+    sigma.y ~ dunif (0, 100)
+    tau.y <- 1/sigma.y^2
+  ###########################
+  # likelihood
+  ###########################
+  for (i in 1:n){
+    mu.y[i] <- alpha[county[i]] + beta * x[i]
+    y[i] ~ dnorm(mu.y[i], tau.y)
+  }
+}
+```
+
+#### Implement JAGS Model
+
+```{r}
+##################################################################
+# insert JAGS model code into an R script
+##################################################################
+{ # Extra bracket needed only for R markdown files - see answers
+  sink("intrcpt_pred.R") # This is the file name for the jags code
+  cat("
+  ## JAGS Model
+  model {
+    ###########################
+    # priors
+    ###########################
+    # alpha priors
+      mu.alpha ~ dnorm(0, .0001)
+      tau.alpha <- 1/sigma.alpha^2
+      sigma.alpha ~ dunif(0, 100)
+      for (j in 1:J){
+        alpha[j] ~ dnorm(mu.alpha, tau.alpha)
+      }
+    # beta
+      beta ~ dnorm(0, .0001)
+    # y priors
+      sigma.y ~ dunif (0, 100)
+      tau.y <- 1/sigma.y^2
+    ###########################
+    # likelihood
+    ###########################
+    for (i in 1:n){
+      mu.y[i] <- alpha[county[i]] + beta * x[i]
+      y[i] ~ dnorm(mu.y[i], tau.y)
+    }
+  }
+  ", fill = TRUE)
+  sink()
+}
+##################################################################
+# implement model
+##################################################################
+######################
+# Call to JAGS
+######################
+intrcpt_pred = rjags::jags.model(
+  file = "intrcpt_pred.R"
+  , data = data
+  , inits = inits
+  , n.chains = 3
+  , n.adapt = 100
+)
+stats::update(intrcpt_pred, n.iter = 1000, progress.bar = "none")
+# save the coda object (more precisely, an mcmc.list object) to R
+mlm_intrcpt_pred = rjags::coda.samples(
+  model = intrcpt_pred
+  , variable.names = params
+  , n.iter = 1000
+  , n.thin = 1
+  , progress.bar = "none"
+)
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
+remove(list = ls()[grep("_temp",ls())])
+gc()
+```
+
+#### Summary of the marginal posterior distributions of the parameters
+
+```{r, results='asis'}
+# summary
+MCMCvis::MCMCsummary(mlm_intrcpt_pred, params = params[params != "alpha"]) %>% 
+  kableExtra::kable(
+    caption = "Bayesian: Varying-intercept multilevel model, floor of measurement predictor"
+    , digits = 5
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12)
+```
+
+Compare fully Bayesian approach to linear mixed-effects model (via Restricted Maximum Likelihood [REML]) 
+
+```{r, results='asis'}
+# compare
+MCMCvis::MCMCsummary(mlm_intrcpt_pred, params = "alpha") %>% 
+  data.frame() %>% 
+  dplyr::select("mean") %>% 
+  dplyr::slice_head(n = 8) %>% 
+  dplyr::bind_cols(coef(M1)$county[1:8,1]) %>% 
+  dplyr::rename(Bayesian=1, LMM=2) %>% 
+  kableExtra::kable(
+    caption = "alpha predictions Bayesian vs. LMM"
+    , digits = 5
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12)
+```
+
+#### Sort the $\alpha_{j}$ by number of obs.
+
+Replicate Figure 12.1 (b) (p.253)
+
+```{r}
+dta_temp <- dplyr::bind_cols(
+  radon_mn %>% dplyr::count(county_index) %>% data.frame()
+  , MCMCvis::MCMCpstr(mlm_intrcpt_pred, params = "alpha", func = function(x) quantile(x, c(0.25, 0.5, 0.75))) %>%
+      data.frame() %>% 
+      dplyr::rename_with(
+        ~ tolower(gsub(".", "", .x, fixed = TRUE))
+      )
+  ) %>% 
+  dplyr::arrange(n) %>% 
+  dplyr::mutate(n_low_hi = dplyr::row_number() %>% as.factor())
+ggplot(dta_temp) +
+  geom_hline(
+    yintercept = MCMCvis::MCMCpstr(mlm_intrcpt_pred, params = "mu.alpha", func = median) %>% unlist()
+    , linetype = "dashed"
+    , lwd = 1
+    , color = "gray40"
+  ) +
+  geom_point(
+    mapping = aes(x = n_low_hi, y = alpha50)
+  ) +
+  geom_linerange(
+    mapping = aes(x = n_low_hi, ymin = alpha25, ymax = alpha75)
+  ) +
+  scale_y_continuous(limits = c(0,2.5)) +
+  ylab(latex2exp::TeX("$\\hat{\\alpha}_{j}$")) + 
+  xlab("# Obs.") +
+  labs(
+    title = "Median model intercept prediction for each county (j)"
+    , subtitle = "Varying-intercept multilevel model, floor of measurement predictor"
+  ) +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_blank()
+    , axis.ticks.x = element_blank()
+    , panel.grid = element_blank()
+  )
+```

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en-US" xml:lang="en-US">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 Multilevel linear models: the basics (Ch 12) | Data Analysis Using Regression and Multilevel/Hierarchical Models</title>
+  <meta name="description" content="Using the bookdown package to write a book for Data Analysis Using Regression and Multilevel/Hierarchical Models. The output format for this example is bookdown::gitbook." />
+  <meta name="generator" content="bookdown 0.25 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 Multilevel linear models: the basics (Ch 12) | Data Analysis Using Regression and Multilevel/Hierarchical Models" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Using the bookdown package to write a book for Data Analysis Using Regression and Multilevel/Hierarchical Models. The output format for this example is bookdown::gitbook." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 Multilevel linear models: the basics (Ch 12) | Data Analysis Using Regression and Multilevel/Hierarchical Models" />
+  
+  <meta name="twitter:description" content="Using the bookdown package to write a book for Data Analysis Using Regression and Multilevel/Hierarchical Models. The output format for this example is bookdown::gitbook." />
+  
+
+<meta name="author" content="Gelman and Hill, 2007" />
+
+
+<meta name="date" content="2022-12-15" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="the-data.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<script type="text/javascript">
+
+// toggle visibility of R source blocks in R Markdown output
+function toggle_R() {
+  var x = document.getElementsByClassName('r');
+  if (x.length == 0) return;
+  function toggle_vis(o) {
+    var d = o.style.display;
+    o.style.display = (d == 'block' || d == '') ? 'none':'block';
+  }
+
+  for (i = 0; i < x.length; i++) {
+    var y = x[i];
+    if (y.tagName.toLowerCase() === 'pre') toggle_vis(y);
+  }
+
+    var elem = document.getElementById("myButton1");
+    if (elem.value === "Hide Code") elem.value = "Show Code";
+    else elem.value = "Hide Code";
+}
+
+document.write('<input onclick="toggle_R();" type="button" value="Hide Code" id="myButton1" style="position: absolute; top: 10%; right: 2%; z-index: 200"></input>')
+
+</script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="index.html#motivation" id="toc-motivation"><span class="toc-section-number">1</span> Motivation<span></span></a>
+<ul>
+<li><a href="index.html#some-definitions-and-details" id="toc-some-definitions-and-details"><span class="toc-section-number">1.1</span> Some definitions and details<span></span></a></li>
+</ul></li>
+<li><a href="the-data.html#the-data" id="toc-the-data"><span class="toc-section-number">2</span> The data<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#multilevel-linear-models-the-basics-ch-12" id="toc-multilevel-linear-models-the-basics-ch-12"><span class="toc-section-number">3</span> Multilevel linear models: the basics (Ch 12)<span></span></a>
+<ul>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#setup" id="toc-setup"><span class="toc-section-number">3.1</span> Setup<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#load-data" id="toc-load-data"><span class="toc-section-number">3.2</span> Load data<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#varying-intercept-multilevel-model-no-predictors-p.-253" id="toc-varying-intercept-multilevel-model-no-predictors-p.-253"><span class="toc-section-number">3.3</span> Varying-intercept multilevel model, no predictors (p. 253)<span></span></a>
+<ul>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#data-and-initial-conditions" id="toc-data-and-initial-conditions"><span class="toc-section-number">3.3.1</span> Data and Initial conditions<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#jags-model" id="toc-jags-model"><span class="toc-section-number">3.3.2</span> JAGS Model<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#implement-jags-model" id="toc-implement-jags-model"><span class="toc-section-number">3.3.3</span> Implement JAGS Model<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#summary-of-the-marginal-posterior-distributions-of-the-parameters" id="toc-summary-of-the-marginal-posterior-distributions-of-the-parameters"><span class="toc-section-number">3.3.4</span> Summary of the marginal posterior distributions of the parameters<span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#make-a-horizontal-caterpillar-plot-for-the-alpha_j" id="toc-make-a-horizontal-caterpillar-plot-for-the-alpha_j"><span class="toc-section-number">3.3.5</span> Make a horizontal caterpillar plot for the <span class="math inline">\(\alpha_{j}\)</span><span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#sort-the-alpha_j-by-number-of-obs." id="toc-sort-the-alpha_j-by-number-of-obs."><span class="toc-section-number">3.3.6</span> Sort the <span class="math inline">\(\alpha_{j}\)</span> by number of obs.<span></span></a></li>
+</ul></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#classical-no-pooling-with-predictors-p.-254" id="toc-classical-no-pooling-with-predictors-p.-254"><span class="toc-section-number">3.4</span> Classical no-pooling with predictors (p. 254)<span></span></a>
+<ul>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#fit-no-pooling-model-with-lm" id="toc-fit-no-pooling-model-with-lm"><span class="toc-section-number">3.4.1</span> Fit no-pooling model with <code>lm</code><span></span></a></li>
+</ul></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#mlm-partial-pooling-with-predictors-p.-254" id="toc-mlm-partial-pooling-with-predictors-p.-254"><span class="toc-section-number">3.5</span> MLM Partial pooling with predictors (p. 254)<span></span></a>
+<ul>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#using-lme4lmer" id="toc-using-lme4lmer"><span class="toc-section-number">3.5.1</span> Using <code>lme4::lmer</code><span></span></a></li>
+<li><a href="multilevel-linear-models-the-basics-ch-12.html#bayesian" id="toc-bayesian"><span class="toc-section-number">3.5.2</span> Bayesian<span></span></a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Data Analysis Using Regression and Multilevel/Hierarchical Models</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="multilevel-linear-models-the-basics-ch-12" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> Multilevel linear models: the basics (Ch 12)<a href="multilevel-linear-models-the-basics-ch-12.html#multilevel-linear-models-the-basics-ch-12" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>This chapter starts on page 251</p>
+<div id="setup" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Setup<a href="multilevel-linear-models-the-basics-ch-12.html#setup" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bread-and-butter</span></span>
+<span id="cb1-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
+<span id="cb1-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span>
+<span id="cb1-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(latex2exp)</span>
+<span id="cb1-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># visualization</span></span>
+<span id="cb1-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Mixed-Effects Models </span></span>
+<span id="cb1-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb1-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom.mixed)</span>
+<span id="cb1-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># jags and bayesian</span></span>
+<span id="cb1-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rjags)</span>
+<span id="cb1-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MCMCvis)</span>
+<span id="cb1-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(HDInterval)</span>
+<span id="cb1-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BayesNSF)</span>
+<span id="cb1-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#set seed</span></span>
+<span id="cb1-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">11</span>)</span></code></pre></div>
+</div>
+<div id="load-data" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Load data<a href="multilevel-linear-models-the-basics-ch-12.html#load-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># srrs2 &lt;- read.table (&quot;../data/radon/srrs2.dat&quot;, header=TRUE, sep=&quot;,&quot;)</span></span>
+<span id="cb2-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb2-2" aria-hidden="true" tabindex="-1"></a>srrs2 <span class="ot">&lt;-</span> <span class="fu">read.table</span> (<span class="st">&quot;http://www.stat.columbia.edu/~gelman/arm/examples/radon/srrs2.dat&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>, <span class="at">sep=</span><span class="st">&quot;,&quot;</span>)</span>
+<span id="cb2-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb2-3" aria-hidden="true" tabindex="-1"></a>srrs2 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb2-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">glimpse</span>()</span></code></pre></div>
+<p>Rows: 12,777
+Columns: 25
+$ idnum <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18~
+$ state <chr> “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “~
+$ state2 <chr>”AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “AZ”, “~
+$ stfips <int> 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4~
+$ zip <int> 85920, 85920, 85924, 85925, 85932, 85936, 85936, 85936, 85938~
+$ region <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3~
+$ typebldg <int> 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 5, 1, 0, 0, 1, 1, 1~
+$ floor <int> 1, 9, 1, 1, 1, 1, 9, 1, 9, 1, 1, 1, 0, 1, 1, 1, 1, 9, 1, 1, 0~
+$ room <int> 2, 0, 3, 3, 1, 1, 0, 1, 0, 3, 1, 2, 2, 1, 5, 1, 1, 0, 7, 1, 1~
+$ basement <chr>”N”, ” “,”N”, “N”, “N”, “N”, ” “,”N”, ” “,” “,”N”, ” “,”~
+$ windoor <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N~
+$ rep <chr> ” 2”, ” 1”, ” 4”, ” 2”, ” 2”, ” 5”, ” 1”, ” 2”, ” 2”, ” 5”, “~
+$ stratum <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2~
+$ wave <chr>” 30”, “117”, “122”, ” 3”, “118”, ” 29”, ” 42”, ” 8”, ” 47”~
+$ starttm <int> 1100, 600, 1145, 1900, 800, 935, 1400, 2045, 930, 1630, 600, ~
+$ stoptm <int> 1100, 700, 1145, 1900, 900, 930, 1400, 2055, 940, 1830, 600, ~
+$ startdt <int> 112987, 70788, 70788, 52088, 70788, 121287, 10188, 50588, 118~
+$ stopdt <int> 120287, 71188, 70788, 52288, 70788, 121487, 10188, 50588, 120~
+$ activity <dbl> 0.3, 0.6, 0.5, 0.6, 0.3, 1.2, 5.0, 3.5, 1.2, 0.6, 1.3, 0.4, 4~
+$ pcterr <dbl> 0.0, 33.3, 0.0, 97.2, 0.0, 22.7, 8.5, 9.2, 14.9, 40.8, 15.8, ~
+$ adjwt <dbl> 136.0610, 128.7850, 150.2451, 136.0610, 136.0610, 120.3414, 1~
+$ dupflag <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+$ zipflag <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+$ cntyfips <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3~
+$ county <chr> “APACHE”, “APACHE”, “APACHE ~</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter MN and create vars</span></span>
+<span id="cb3-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-2" aria-hidden="true" tabindex="-1"></a>radon_mn <span class="ot">&lt;-</span> srrs2 <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb3-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-4" aria-hidden="true" tabindex="-1"></a>    state<span class="sc">==</span><span class="st">&quot;MN&quot;</span></span>
+<span id="cb3-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb3-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">radon =</span> activity</span>
+<span id="cb3-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-8" aria-hidden="true" tabindex="-1"></a>    , <span class="at">log.radon =</span> <span class="fu">log</span>(<span class="fu">ifelse</span>(radon<span class="sc">==</span><span class="dv">0</span>, .<span class="dv">1</span>, radon))</span>
+<span id="cb3-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-9" aria-hidden="true" tabindex="-1"></a>    , <span class="at">y =</span> log.radon</span>
+<span id="cb3-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-10" aria-hidden="true" tabindex="-1"></a>    , <span class="at">x =</span> floor <span class="co"># 0 for basement, 1 for first floor</span></span>
+<span id="cb3-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-11" aria-hidden="true" tabindex="-1"></a>    , <span class="at">county_index =</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(county))</span>
+<span id="cb3-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># n</span></span>
+<span id="cb3-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-14" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(radon_mn)</span>
+<span id="cb3-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># count</span></span>
+<span id="cb3-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-16" aria-hidden="true" tabindex="-1"></a>radon_mn <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">count</span>(county_index, county) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-17" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb3-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Records by county (first 10)&quot;</span></span>
+<span id="cb3-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-20" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb3-21" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">column_spec</span>(<span class="dv">1</span>, <span class="at">bold =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="st">&quot;3em&quot;</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+<span id="tab:unnamed-chunk-4">Table 3.1: </span>Records by county (first 10)
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+county_index
+</th>
+<th style="text-align:left;">
+county
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;width: 3em; ">
+1
+</td>
+<td style="text-align:left;">
+AITKIN
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+2
+</td>
+<td style="text-align:left;">
+ANOKA
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+3
+</td>
+<td style="text-align:left;">
+BECKER
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+4
+</td>
+<td style="text-align:left;">
+BELTRAMI
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+5
+</td>
+<td style="text-align:left;">
+BENTON
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+6
+</td>
+<td style="text-align:left;">
+BIG STONE
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+7
+</td>
+<td style="text-align:left;">
+BLUE EARTH
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+8
+</td>
+<td style="text-align:left;">
+BROWN
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+9
+</td>
+<td style="text-align:left;">
+CARLTON
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:right;width: 3em; ">
+10
+</td>
+<td style="text-align:left;">
+CARVER
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="varying-intercept-multilevel-model-no-predictors-p.-253" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Varying-intercept multilevel model, no predictors (p. 253)<a href="multilevel-linear-models-the-basics-ch-12.html#varying-intercept-multilevel-model-no-predictors-p.-253" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><span class="math display">\[
+y_i = \alpha_{j[i]} + \epsilon_i
+\]</span></p>
+<p>where <span class="math inline">\(j[i]\)</span> is the county corresponding to house <span class="math inline">\(i\)</span></p>
+<p>Partial-pooling estimates from a multilevel model:
+For this simple scenario with no predictors, the multilevel estimate for a given county <span class="math inline">\(j\)</span> can be approximated as a weighted average of the mean of the observations in the county (the unpooled estimate, <span class="math inline">\(\overline{y}_j\)</span>) and the mean over all counties (the completely pooled estimate, <span class="math inline">\(\overline{y}_{all}\)</span>).</p>
+<p>The weighted average reflects the relative amount of information available about the individual county, on one hand, and the average of all the counties, on the other:</p>
+<ul>
+<li>Averages from counties with smaller sample sizes carry less information, and the weighting pulls the multilevel estimates closer to the overall state average. In the limit, if <span class="math inline">\(n_j = 0\)</span>, the multilevel estimate is simply the overall average, <span class="math inline">\(\overline{y}_{all}\)</span>.</li>
+<li>Averages from counties with larger sample sizes carry more information, and the corresponding multilevel estimates are close to the county averages. In the limit as <span class="math inline">\(n_j \to \infty\)</span>, the multilevel estimate is simply the county average, <span class="math inline">\(\overline{y}_{j}\)</span> .</li>
+<li>In intermediate cases, the multilevel estimate lies between the two extremes.</li>
+</ul>
+<div id="data-and-initial-conditions" class="section level3 hasAnchor" number="3.3.1">
+<h3><span class="header-section-number">3.3.1</span> Data and Initial conditions<a href="multilevel-linear-models-the-basics-ch-12.html#data-and-initial-conditions" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># varying-intercept model, no predictors</span></span>
+<span id="cb4-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">## data for jags</span></span>
+<span id="cb4-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb4-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">nrow</span>(radon_mn)</span>
+<span id="cb4-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-5" aria-hidden="true" tabindex="-1"></a>  , <span class="at">J =</span> radon_mn<span class="sc">$</span>county <span class="sc">%&gt;%</span> <span class="fu">unique</span>() <span class="sc">%&gt;%</span> <span class="fu">length</span>()</span>
+<span id="cb4-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-6" aria-hidden="true" tabindex="-1"></a>  , <span class="at">y =</span> radon_mn<span class="sc">$</span>log.radon <span class="sc">%&gt;%</span> <span class="fu">as.double</span>()</span>
+<span id="cb4-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-7" aria-hidden="true" tabindex="-1"></a>  , <span class="at">county =</span> radon_mn<span class="sc">$</span>county_index <span class="sc">%&gt;%</span> <span class="fu">as.double</span>()</span>
+<span id="cb4-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## inits for jags</span></span>
+<span id="cb4-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-10" aria-hidden="true" tabindex="-1"></a>inits <span class="ot">&lt;-</span> <span class="cf">function</span>(){</span>
+<span id="cb4-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb4-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fu">rnorm</span>(<span class="at">n =</span> data<span class="sc">$</span>J, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># county-level intercept (n = length of # counties)</span></span>
+<span id="cb4-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-13" aria-hidden="true" tabindex="-1"></a>    , <span class="at">mu.alpha =</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb4-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-14" aria-hidden="true" tabindex="-1"></a>    , <span class="at">sigma.alpha =</span> <span class="fu">runif</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
+<span id="cb4-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-15" aria-hidden="true" tabindex="-1"></a>    , <span class="at">sigma.y =</span> <span class="fu">runif</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
+<span id="cb4-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># define parameters to return from MCMC</span></span>
+<span id="cb4-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb4-19" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;mu.alpha&quot;</span>, <span class="st">&quot;sigma.y&quot;</span>, <span class="st">&quot;sigma.alpha&quot;</span>)</span></code></pre></div>
+</div>
+<div id="jags-model" class="section level3 hasAnchor" number="3.3.2">
+<h3><span class="header-section-number">3.3.2</span> JAGS Model<a href="multilevel-linear-models-the-basics-ch-12.html#jags-model" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Write out the JAGS code for the model.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## JAGS Model</span></span>
+<span id="cb5-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-2" aria-hidden="true" tabindex="-1"></a>model {</span>
+<span id="cb5-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb5-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># priors</span></span>
+<span id="cb5-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb5-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># alpha priors</span></span>
+<span id="cb5-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-7" aria-hidden="true" tabindex="-1"></a>    mu.alpha <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, .<span class="dv">0001</span>)</span>
+<span id="cb5-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-8" aria-hidden="true" tabindex="-1"></a>    tau.alpha <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>sigma.alpha<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb5-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-9" aria-hidden="true" tabindex="-1"></a>    sigma.alpha <span class="sc">~</span> <span class="fu">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb5-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>J){</span>
+<span id="cb5-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-11" aria-hidden="true" tabindex="-1"></a>      alpha[j] <span class="sc">~</span> <span class="fu">dnorm</span>(mu.alpha, tau.alpha)</span>
+<span id="cb5-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># y priors</span></span>
+<span id="cb5-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-14" aria-hidden="true" tabindex="-1"></a>    sigma.y <span class="sc">~</span> <span class="fu">dunif</span> (<span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb5-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-15" aria-hidden="true" tabindex="-1"></a>    tau.y <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>sigma.y<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb5-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb5-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># likelihood</span></span>
+<span id="cb5-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb5-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb5-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-20" aria-hidden="true" tabindex="-1"></a>    y[i] <span class="sc">~</span> <span class="fu">dnorm</span>(alpha[county[i]], tau.y)</span>
+<span id="cb5-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb5-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="implement-jags-model" class="section level3 hasAnchor" number="3.3.3">
+<h3><span class="header-section-number">3.3.3</span> Implement JAGS Model<a href="multilevel-linear-models-the-basics-ch-12.html#implement-jags-model" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb6-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># insert JAGS model code into an R script</span></span>
+<span id="cb6-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb6-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-4" aria-hidden="true" tabindex="-1"></a>{ <span class="co"># Extra bracket needed only for R markdown files - see answers</span></span>
+<span id="cb6-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sink</span>(<span class="st">&quot;intrcpt_nopred.R&quot;</span>) <span class="co"># This is the file name for the jags code</span></span>
+<span id="cb6-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;</span></span>
+<span id="cb6-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">  ## JAGS Model</span></span>
+<span id="cb6-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">  model {</span></span>
+<span id="cb6-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb6-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">    # priors</span></span>
+<span id="cb6-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb6-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">    # alpha priors</span></span>
+<span id="cb6-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">      mu.alpha ~ dnorm(0, .0001)</span></span>
+<span id="cb6-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">      tau.alpha &lt;- 1/sigma.alpha^2</span></span>
+<span id="cb6-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">      sigma.alpha ~ dunif(0, 100)</span></span>
+<span id="cb6-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">      for (j in 1:J){</span></span>
+<span id="cb6-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">        alpha[j] ~ dnorm(mu.alpha, tau.alpha)</span></span>
+<span id="cb6-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb6-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">    # y priors</span></span>
+<span id="cb6-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">      sigma.y ~ dunif (0, 100)</span></span>
+<span id="cb6-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="st">      tau.y &lt;- 1/sigma.y^2</span></span>
+<span id="cb6-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb6-23"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">    # likelihood</span></span>
+<span id="cb6-24"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb6-25"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="st">    for (i in 1:n){</span></span>
+<span id="cb6-26"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">      y[i] ~ dnorm(alpha[county[i]], tau.y)</span></span>
+<span id="cb6-27"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb6-28"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb6-29"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;</span>, <span class="at">fill =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-30"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sink</span>()</span>
+<span id="cb6-31"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-32"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb6-33"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="co"># implement model</span></span>
+<span id="cb6-34"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb6-35"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="do">######################</span></span>
+<span id="cb6-36"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Call to JAGS</span></span>
+<span id="cb6-37"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="do">######################</span></span>
+<span id="cb6-38"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-38" aria-hidden="true" tabindex="-1"></a>intrcpt_nopred <span class="ot">=</span> rjags<span class="sc">::</span><span class="fu">jags.model</span>(</span>
+<span id="cb6-39"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;intrcpt_nopred.R&quot;</span></span>
+<span id="cb6-40"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-40" aria-hidden="true" tabindex="-1"></a>  , <span class="at">data =</span> data</span>
+<span id="cb6-41"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-41" aria-hidden="true" tabindex="-1"></a>  , <span class="at">inits =</span> inits</span>
+<span id="cb6-42"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-42" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.chains =</span> <span class="dv">3</span></span>
+<span id="cb6-43"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-43" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.adapt =</span> <span class="dv">100</span></span>
+<span id="cb6-44"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-44" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-45"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-45" aria-hidden="true" tabindex="-1"></a>stats<span class="sc">::</span><span class="fu">update</span>(intrcpt_nopred, <span class="at">n.iter =</span> <span class="dv">1000</span>, <span class="at">progress.bar =</span> <span class="st">&quot;none&quot;</span>)</span>
+<span id="cb6-46"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="co"># save the coda object (more precisely, an mcmc.list object) to R</span></span>
+<span id="cb6-47"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-47" aria-hidden="true" tabindex="-1"></a>mlm_intrcpt_nopred <span class="ot">=</span> rjags<span class="sc">::</span><span class="fu">coda.samples</span>(</span>
+<span id="cb6-48"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> intrcpt_nopred</span>
+<span id="cb6-49"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-49" aria-hidden="true" tabindex="-1"></a>  , <span class="at">variable.names =</span> params</span>
+<span id="cb6-50"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-50" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.iter =</span> <span class="dv">1000</span></span>
+<span id="cb6-51"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-51" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.thin =</span> <span class="dv">1</span></span>
+<span id="cb6-52"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-52" aria-hidden="true" tabindex="-1"></a>  , <span class="at">progress.bar =</span> <span class="st">&quot;none&quot;</span></span>
+<span id="cb6-53"><a href="multilevel-linear-models-the-basics-ch-12.html#cb6-53" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="summary-of-the-marginal-posterior-distributions-of-the-parameters" class="section level3 hasAnchor" number="3.3.4">
+<h3><span class="header-section-number">3.3.4</span> Summary of the marginal posterior distributions of the parameters<a href="multilevel-linear-models-the-basics-ch-12.html#summary-of-the-marginal-posterior-distributions-of-the-parameters" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># summary</span></span>
+<span id="cb7-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-2" aria-hidden="true" tabindex="-1"></a>MCMCvis<span class="sc">::</span><span class="fu">MCMCsummary</span>(mlm_intrcpt_nopred, <span class="at">params =</span> params[params <span class="sc">!=</span> <span class="st">&quot;alpha&quot;</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-3" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb7-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Bayesian: arying-intercept multilevel model, no predictors&quot;</span></span>
+<span id="cb7-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-5" aria-hidden="true" tabindex="-1"></a>    , <span class="at">digits =</span> <span class="dv">5</span></span>
+<span id="cb7-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb7-7" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+<span id="tab:unnamed-chunk-9">Table 3.2: </span>Bayesian: arying-intercept multilevel model, no predictors
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+2.5%
+</th>
+<th style="text-align:right;">
+50%
+</th>
+<th style="text-align:right;">
+97.5%
+</th>
+<th style="text-align:right;">
+Rhat
+</th>
+<th style="text-align:right;">
+n.eff
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+mu.alpha
+</td>
+<td style="text-align:right;">
+1.31365
+</td>
+<td style="text-align:right;">
+0.04921
+</td>
+<td style="text-align:right;">
+1.21825
+</td>
+<td style="text-align:right;">
+1.31339
+</td>
+<td style="text-align:right;">
+1.40908
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+930
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sigma.y
+</td>
+<td style="text-align:right;">
+0.79908
+</td>
+<td style="text-align:right;">
+0.01856
+</td>
+<td style="text-align:right;">
+0.76404
+</td>
+<td style="text-align:right;">
+0.79905
+</td>
+<td style="text-align:right;">
+0.83674
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1791
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sigma.alpha
+</td>
+<td style="text-align:right;">
+0.31228
+</td>
+<td style="text-align:right;">
+0.04843
+</td>
+<td style="text-align:right;">
+0.22500
+</td>
+<td style="text-align:right;">
+0.30981
+</td>
+<td style="text-align:right;">
+0.40941
+</td>
+<td style="text-align:right;">
+1.01
+</td>
+<td style="text-align:right;">
+328
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="make-a-horizontal-caterpillar-plot-for-the-alpha_j" class="section level3 hasAnchor" number="3.3.5">
+<h3><span class="header-section-number">3.3.5</span> Make a horizontal caterpillar plot for the <span class="math inline">\(\alpha_{j}\)</span><a href="multilevel-linear-models-the-basics-ch-12.html#make-a-horizontal-caterpillar-plot-for-the-alpha_j" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Caterpillar plots</span></span>
+<span id="cb8-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-2" aria-hidden="true" tabindex="-1"></a>MCMCvis<span class="sc">::</span><span class="fu">MCMCplot</span>(</span>
+<span id="cb8-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-3" aria-hidden="true" tabindex="-1"></a>  mlm_intrcpt_nopred</span>
+<span id="cb8-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-4" aria-hidden="true" tabindex="-1"></a>  , <span class="at">params =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>)</span>
+<span id="cb8-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-5" aria-hidden="true" tabindex="-1"></a>  , <span class="at">horiz =</span> <span class="cn">FALSE</span></span>
+<span id="cb8-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-6" aria-hidden="true" tabindex="-1"></a>  , <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">6</span>,<span class="dv">5</span>)</span>
+<span id="cb8-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Number specifying size of text for parameter labels on axis.</span></span>
+<span id="cb8-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-8" aria-hidden="true" tabindex="-1"></a>  , <span class="at">sz_labels =</span> <span class="fl">0.6</span></span>
+<span id="cb8-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Number specifying size of points represents posterior medians.</span></span>
+<span id="cb8-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-10" aria-hidden="true" tabindex="-1"></a>  , <span class="at">sz_med =</span> <span class="fl">0.7</span></span>
+<span id="cb8-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Number specifying thickness of 50 percent CI line (thicker line).</span></span>
+<span id="cb8-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-12" aria-hidden="true" tabindex="-1"></a>  , <span class="at">sz_thick =</span> <span class="dv">2</span></span>
+<span id="cb8-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Number specifying thickness of 95 percent CI line (thinner line).</span></span>
+<span id="cb8-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-14" aria-hidden="true" tabindex="-1"></a>  , <span class="at">sz_thin =</span> <span class="dv">1</span></span>
+<span id="cb8-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><img src="MLM_GelmanHill_files/figure-html/unnamed-chunk-10-1.png" width="960" /></p>
+</div>
+<div id="sort-the-alpha_j-by-number-of-obs." class="section level3 hasAnchor" number="3.3.6">
+<h3><span class="header-section-number">3.3.6</span> Sort the <span class="math inline">\(\alpha_{j}\)</span> by number of obs.<a href="multilevel-linear-models-the-basics-ch-12.html#sort-the-alpha_j-by-number-of-obs." class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Replicate Figure 12.1 (b) (p.253)</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-1" aria-hidden="true" tabindex="-1"></a>dta_temp <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(</span>
+<span id="cb9-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-2" aria-hidden="true" tabindex="-1"></a>  radon_mn <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">count</span>(county_index) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb9-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-3" aria-hidden="true" tabindex="-1"></a>  , MCMCvis<span class="sc">::</span><span class="fu">MCMCpstr</span>(mlm_intrcpt_nopred, <span class="at">params =</span> <span class="st">&quot;alpha&quot;</span>, <span class="at">func =</span> <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">data.frame</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb9-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-5" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">rename_with</span>(</span>
+<span id="cb9-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="sc">~</span> <span class="fu">tolower</span>(<span class="fu">gsub</span>(<span class="st">&quot;.&quot;</span>, <span class="st">&quot;&quot;</span>, .x, <span class="at">fixed =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb9-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-7" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb9-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-9" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(n) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-10" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">n_low_hi =</span> dplyr<span class="sc">::</span><span class="fu">row_number</span>() <span class="sc">%&gt;%</span> <span class="fu">as.factor</span>())</span>
+<span id="cb9-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dta_temp) <span class="sc">+</span></span>
+<span id="cb9-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(</span>
+<span id="cb9-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">yintercept =</span> MCMCvis<span class="sc">::</span><span class="fu">MCMCpstr</span>(mlm_intrcpt_nopred, <span class="at">params =</span> <span class="st">&quot;mu.alpha&quot;</span>, <span class="at">func =</span> median) <span class="sc">%&gt;%</span> <span class="fu">unlist</span>()</span>
+<span id="cb9-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-14" aria-hidden="true" tabindex="-1"></a>    , <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span></span>
+<span id="cb9-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-15" aria-hidden="true" tabindex="-1"></a>    , <span class="at">lwd =</span> <span class="dv">1</span></span>
+<span id="cb9-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-16" aria-hidden="true" tabindex="-1"></a>    , <span class="at">color =</span> <span class="st">&quot;gray40&quot;</span></span>
+<span id="cb9-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> n_low_hi, <span class="at">y =</span> alpha50)</span>
+<span id="cb9-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(</span>
+<span id="cb9-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> n_low_hi, <span class="at">ymin =</span> alpha25, <span class="at">ymax =</span> alpha75)</span>
+<span id="cb9-23"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-24"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">2.5</span>)) <span class="sc">+</span></span>
+<span id="cb9-25"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(latex2exp<span class="sc">::</span><span class="fu">TeX</span>(<span class="st">&quot;$</span><span class="sc">\\</span><span class="st">hat{</span><span class="sc">\\</span><span class="st">alpha}_{j}$&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb9-26"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;# Obs.&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-27"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-28"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Median model intercept prediction for each county (j)&quot;</span></span>
+<span id="cb9-29"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-29" aria-hidden="true" tabindex="-1"></a>    , <span class="at">subtitle =</span> <span class="st">&quot;Varying-intercept multilevel model, no predictors&quot;</span></span>
+<span id="cb9-30"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-31"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb9-32"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-33"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb9-34"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-34" aria-hidden="true" tabindex="-1"></a>    , <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb9-35"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-35" aria-hidden="true" tabindex="-1"></a>    , <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb9-36"><a href="multilevel-linear-models-the-basics-ch-12.html#cb9-36" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="MLM_GelmanHill_files/figure-html/unnamed-chunk-11-1.png" width="960" /></p>
+</div>
+</div>
+<div id="classical-no-pooling-with-predictors-p.-254" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Classical no-pooling with predictors (p. 254)<a href="multilevel-linear-models-the-basics-ch-12.html#classical-no-pooling-with-predictors-p.-254" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This section considers partial pooling for a model with unit-level predictors. In this scenario, no pooling might refer to fitting a separate regression model within each group. However, a less extreme and more common option that we also sometimes refer to as “no pooling” is a model that includes group indicators and estimates the model classically.</p>
+<div id="fit-no-pooling-model-with-lm" class="section level3 hasAnchor" number="3.4.1">
+<h3><span class="header-section-number">3.4.1</span> Fit no-pooling model with <code>lm</code><a href="multilevel-linear-models-the-basics-ch-12.html#fit-no-pooling-model-with-lm" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p><span class="math display">\[
+y_i = \alpha_{j[i]} + \beta\cdot x_i + \epsilon_i
+\]</span></p>
+<p>where <span class="math inline">\(j[i]\)</span> is the county corresponding to house <span class="math inline">\(i\)</span>; and <span class="math inline">\(x\)</span> is the floor of measurement (0 = basement, 1 = 1st floor…)</p>
+<p>To fit the no-pooling model in R, we include the county index (a variable named county that takes on values between 1 and 85) as a factor in the regression—thus, predictors for the 85 different counties. We add “−1” to the regression formula to remove the constant term, so that all 85 counties are included. Otherwise, R would use county 1 as a baseline.</p>
+<p>In the no-pooling model, the <span class="math inline">\(\alpha_{j}\)</span>’s are set to the classical least squares estimates, which correspond to the fitted intercepts in a model run separately in each county (with the constraint that the slope coefficient equals <span class="math inline">\(\beta\)</span> in all models).</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>(<span class="at">data =</span> radon_mn, <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> <span class="fu">factor</span>(county_index) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-2" aria-hidden="true" tabindex="-1"></a>  broom<span class="sc">::</span><span class="fu">tidy</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb10-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-4" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb10-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;no-pooling model includes county indicators&quot;</span></span>
+<span id="cb10-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-7" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb10-8" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">column_spec</span>(<span class="dv">1</span>, <span class="at">bold =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="st">&quot;3em&quot;</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+<span id="tab:unnamed-chunk-12">Table 3.3: </span>no-pooling model includes county indicators
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+std.error
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 3em; ">
+x
+</td>
+<td style="text-align:right;">
+-0.7205390
+</td>
+<td style="text-align:right;">
+0.0735232
+</td>
+<td style="text-align:right;">
+-9.800158
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)1
+</td>
+<td style="text-align:right;">
+0.8405411
+</td>
+<td style="text-align:right;">
+0.3786561
+</td>
+<td style="text-align:right;">
+2.219801
+</td>
+<td style="text-align:right;">
+0.0267009
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)2
+</td>
+<td style="text-align:right;">
+0.8748191
+</td>
+<td style="text-align:right;">
+0.1049822
+</td>
+<td style="text-align:right;">
+8.333020
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)3
+</td>
+<td style="text-align:right;">
+1.5286973
+</td>
+<td style="text-align:right;">
+0.4394610
+</td>
+<td style="text-align:right;">
+3.478573
+</td>
+<td style="text-align:right;">
+0.0005302
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)4
+</td>
+<td style="text-align:right;">
+1.5527222
+</td>
+<td style="text-align:right;">
+0.2889702
+</td>
+<td style="text-align:right;">
+5.373296
+</td>
+<td style="text-align:right;">
+0.0000001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)5
+</td>
+<td style="text-align:right;">
+1.4325705
+</td>
+<td style="text-align:right;">
+0.3786561
+</td>
+<td style="text-align:right;">
+3.783302
+</td>
+<td style="text-align:right;">
+0.0001658
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)6
+</td>
+<td style="text-align:right;">
+1.5130101
+</td>
+<td style="text-align:right;">
+0.4367190
+</td>
+<td style="text-align:right;">
+3.464493
+</td>
+<td style="text-align:right;">
+0.0005584
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)7
+</td>
+<td style="text-align:right;">
+2.0121604
+</td>
+<td style="text-align:right;">
+0.2024343
+</td>
+<td style="text-align:right;">
+9.939820
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)8
+</td>
+<td style="text-align:right;">
+1.9895765
+</td>
+<td style="text-align:right;">
+0.3799921
+</td>
+<td style="text-align:right;">
+5.235836
+</td>
+<td style="text-align:right;">
+0.0000002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 3em; ">
+factor(county_index)9
+</td>
+<td style="text-align:right;">
+1.0030369
+</td>
+<td style="text-align:right;">
+0.2393138
+</td>
+<td style="text-align:right;">
+4.191304
+</td>
+<td style="text-align:right;">
+0.0000307
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="mlm-partial-pooling-with-predictors-p.-254" class="section level2 hasAnchor" number="3.5">
+<h2><span class="header-section-number">3.5</span> MLM Partial pooling with predictors (p. 254)<a href="multilevel-linear-models-the-basics-ch-12.html#mlm-partial-pooling-with-predictors-p.-254" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The simplest multilevel model for the radon data with the floor predictor can be written as:</p>
+<p><span class="math display">\[\begin{align*}
+y_i \sim \textrm{N}(\alpha_{j[i]} + \beta\cdot x_i, \sigma^2) \\
+\textrm{for} &amp;\; i = 1, \cdots, n
+\end{align*}\]</span></p>
+<p>which looks like the no-pooling model but with one key difference. In the no-pooling model, the <span class="math inline">\(\alpha_{j}\)</span>’s are set to the classical least squares estimates, which correspond to the fitted intercepts in a model run separately in each county (with the constraint that the slope coefficient equals <span class="math inline">\(\beta\)</span> in all models). In the multilevel model, a “soft constraint” is applied to the <span class="math inline">\(\alpha_{j}\)</span>’s: they are assigned a probability distribution,</p>
+<p><span class="math display">\[\begin{align*}
+\alpha_j &amp;\sim \textrm{N}(\mu_{\alpha}, \sigma^{2}_{\alpha}) \\
+\textrm{for} &amp;\; j = 1, \cdots, J
+\end{align*}\]</span></p>
+<p>with their mean <span class="math inline">\(\mu_{\alpha}\)</span> and standard deviation <span class="math inline">\(\sigma^{2}_{\alpha}\)</span> estimated from the data. The distribution (12.3) has the effect of pulling the estimates of <span class="math inline">\(\alpha_{j}\)</span> toward the mean level <span class="math inline">\(\mu_{\alpha}\)</span>, but not all the way. (p. 257)</p>
+<div id="using-lme4lmer" class="section level3 hasAnchor" number="3.5.1">
+<h3><span class="header-section-number">3.5.1</span> Using <code>lme4::lmer</code><a href="multilevel-linear-models-the-basics-ch-12.html#using-lme4lmer" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Varying-intercept model w/ no predictors</span></span>
+<span id="cb11-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb11-2" aria-hidden="true" tabindex="-1"></a>M0 <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">lmer</span>(<span class="at">data =</span> radon_mn, <span class="at">formula =</span> y <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> county))</span>
+<span id="cb11-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(M0)</span></code></pre></div>
+<p>Linear mixed model fit by REML [‘lmerMod’]
+Formula: y ~ 1 + (1 | county)
+Data: radon_mn</p>
+<p>REML criterion at convergence: 2259.4</p>
+<p>Scaled residuals:
+Min 1Q Median 3Q Max
+-4.4661 -0.5734 0.0441 0.6432 3.3516</p>
+<p>Random effects:
+Groups Name Variance Std.Dev.
+county (Intercept) 0.09581 0.3095<br />
+Residual 0.63662 0.7979<br />
+Number of obs: 919, groups: county, 85</p>
+<p>Fixed effects:
+Estimate Std. Error t value
+(Intercept) 1.31258 0.04891 26.84</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Including x as a predictor</span></span>
+<span id="cb12-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb12-2" aria-hidden="true" tabindex="-1"></a>M1 <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">lmer</span>(<span class="at">data =</span> radon_mn, <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> county))</span>
+<span id="cb12-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(M1)</span></code></pre></div>
+<p>Linear mixed model fit by REML [‘lmerMod’]
+Formula: y ~ x + (1 | county)
+Data: radon_mn</p>
+<p>REML criterion at convergence: 2171.3</p>
+<p>Scaled residuals:
+Min 1Q Median 3Q Max
+-4.3989 -0.6155 0.0029 0.6405 3.4281</p>
+<p>Random effects:
+Groups Name Variance Std.Dev.
+county (Intercept) 0.1077 0.3282<br />
+Residual 0.5709 0.7556<br />
+Number of obs: 919, groups: county, 85</p>
+<p>Fixed effects:
+Estimate Std. Error t value
+(Intercept) 1.46160 0.05158 28.339
+x -0.69299 0.07043 -9.839</p>
+<p>Correlation of Fixed Effects:
+(Intr)
+x -0.288</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#estimated regression coefficicents</span></span>
+<span id="cb13-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M1)<span class="sc">$</span>county[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,<span class="dv">1</span>]</span></code></pre></div>
+<p>[1] 1.1915004 0.9276468 1.4792143</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed and random effects</span></span>
+<span id="cb14-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fixef</span>(M1)</span></code></pre></div>
+<p>(Intercept) x
+1.4615979 -0.6929937</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ranef</span>(M1)<span class="sc">$</span>county[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,<span class="dv">1</span>]</span></code></pre></div>
+<p>[1] -0.27009750 -0.53395107 0.01761646</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check</span></span>
+<span id="cb16-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fixef</span>(M1)[[<span class="dv">1</span>]] <span class="sc">+</span> <span class="fu">ranef</span>(M1)<span class="sc">$</span>county[<span class="dv">1</span>,<span class="dv">1</span>]</span></code></pre></div>
+<p>[1] 1.1915</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M1)<span class="sc">$</span>county[<span class="dv">1</span>,<span class="dv">1</span>]</span></code></pre></div>
+<p>[1] 1.1915</p>
+</div>
+<div id="bayesian" class="section level3 hasAnchor" number="3.5.2">
+<h3><span class="header-section-number">3.5.2</span> Bayesian<a href="multilevel-linear-models-the-basics-ch-12.html#bayesian" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="data-and-initial-conditions-1" class="section level4 hasAnchor" number="3.5.2.1">
+<h4><span class="header-section-number">3.5.2.1</span> Data and Initial conditions<a href="multilevel-linear-models-the-basics-ch-12.html#data-and-initial-conditions-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># varying-intercept model, no predictors</span></span>
+<span id="cb18-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="do">## data for jags</span></span>
+<span id="cb18-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">nrow</span>(radon_mn)</span>
+<span id="cb18-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-5" aria-hidden="true" tabindex="-1"></a>  , <span class="at">J =</span> radon_mn<span class="sc">$</span>county <span class="sc">%&gt;%</span> <span class="fu">unique</span>() <span class="sc">%&gt;%</span> <span class="fu">length</span>()</span>
+<span id="cb18-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-6" aria-hidden="true" tabindex="-1"></a>  , <span class="at">y =</span> radon_mn<span class="sc">$</span>log.radon <span class="sc">%&gt;%</span> <span class="fu">as.double</span>()</span>
+<span id="cb18-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-7" aria-hidden="true" tabindex="-1"></a>  , <span class="at">x =</span> radon_mn<span class="sc">$</span>x <span class="sc">%&gt;%</span> <span class="fu">as.double</span>()</span>
+<span id="cb18-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-8" aria-hidden="true" tabindex="-1"></a>  , <span class="at">county =</span> radon_mn<span class="sc">$</span>county_index <span class="sc">%&gt;%</span> <span class="fu">as.double</span>()</span>
+<span id="cb18-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="do">## inits for jags</span></span>
+<span id="cb18-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-11" aria-hidden="true" tabindex="-1"></a>inits <span class="ot">&lt;-</span> <span class="cf">function</span>(){</span>
+<span id="cb18-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb18-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fu">rnorm</span>(<span class="at">n =</span> data<span class="sc">$</span>J, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># county-level intercept (n = length of # counties)</span></span>
+<span id="cb18-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-14" aria-hidden="true" tabindex="-1"></a>    , <span class="at">beta =</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb18-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-15" aria-hidden="true" tabindex="-1"></a>    , <span class="at">mu.alpha =</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb18-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-16" aria-hidden="true" tabindex="-1"></a>    , <span class="at">sigma.alpha =</span> <span class="fu">runif</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
+<span id="cb18-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-17" aria-hidden="true" tabindex="-1"></a>    , <span class="at">sigma.y =</span> <span class="fu">runif</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
+<span id="cb18-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="co"># define parameters to return from MCMC</span></span>
+<span id="cb18-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb18-21" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;mu.alpha&quot;</span>, <span class="st">&quot;sigma.y&quot;</span>, <span class="st">&quot;sigma.alpha&quot;</span>)</span></code></pre></div>
+</div>
+<div id="jags-model-1" class="section level4 hasAnchor" number="3.5.2.2">
+<h4><span class="header-section-number">3.5.2.2</span> JAGS Model<a href="multilevel-linear-models-the-basics-ch-12.html#jags-model-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Write out the JAGS code for the model.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## JAGS Model</span></span>
+<span id="cb19-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-2" aria-hidden="true" tabindex="-1"></a>model {</span>
+<span id="cb19-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb19-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># priors</span></span>
+<span id="cb19-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb19-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># alpha priors</span></span>
+<span id="cb19-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-7" aria-hidden="true" tabindex="-1"></a>    mu.alpha <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, .<span class="dv">0001</span>)</span>
+<span id="cb19-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-8" aria-hidden="true" tabindex="-1"></a>    tau.alpha <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>sigma.alpha<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb19-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-9" aria-hidden="true" tabindex="-1"></a>    sigma.alpha <span class="sc">~</span> <span class="fu">dunif</span>(<span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb19-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>J){</span>
+<span id="cb19-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-11" aria-hidden="true" tabindex="-1"></a>      alpha[j] <span class="sc">~</span> <span class="fu">dnorm</span>(mu.alpha, tau.alpha)</span>
+<span id="cb19-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># beta</span></span>
+<span id="cb19-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-14" aria-hidden="true" tabindex="-1"></a>    beta <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, .<span class="dv">0001</span>)</span>
+<span id="cb19-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># y priors</span></span>
+<span id="cb19-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-16" aria-hidden="true" tabindex="-1"></a>    sigma.y <span class="sc">~</span> <span class="fu">dunif</span> (<span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb19-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-17" aria-hidden="true" tabindex="-1"></a>    tau.y <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>sigma.y<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb19-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb19-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># likelihood</span></span>
+<span id="cb19-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="do">###########################</span></span>
+<span id="cb19-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb19-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-22" aria-hidden="true" tabindex="-1"></a>    mu.y[i] <span class="ot">&lt;-</span> alpha[county[i]] <span class="sc">+</span> beta <span class="sc">*</span> x[i]</span>
+<span id="cb19-23"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-23" aria-hidden="true" tabindex="-1"></a>    y[i] <span class="sc">~</span> <span class="fu">dnorm</span>(mu.y[i], tau.y)</span>
+<span id="cb19-24"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-24" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-25"><a href="multilevel-linear-models-the-basics-ch-12.html#cb19-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="implement-jags-model-1" class="section level4 hasAnchor" number="3.5.2.3">
+<h4><span class="header-section-number">3.5.2.3</span> Implement JAGS Model<a href="multilevel-linear-models-the-basics-ch-12.html#implement-jags-model-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb20-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># insert JAGS model code into an R script</span></span>
+<span id="cb20-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb20-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-4" aria-hidden="true" tabindex="-1"></a>{ <span class="co"># Extra bracket needed only for R markdown files - see answers</span></span>
+<span id="cb20-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sink</span>(<span class="st">&quot;intrcpt_pred.R&quot;</span>) <span class="co"># This is the file name for the jags code</span></span>
+<span id="cb20-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;</span></span>
+<span id="cb20-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="st">  ## JAGS Model</span></span>
+<span id="cb20-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="st">  model {</span></span>
+<span id="cb20-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb20-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="st">    # priors</span></span>
+<span id="cb20-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb20-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="st">    # alpha priors</span></span>
+<span id="cb20-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="st">      mu.alpha ~ dnorm(0, .0001)</span></span>
+<span id="cb20-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="st">      tau.alpha &lt;- 1/sigma.alpha^2</span></span>
+<span id="cb20-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="st">      sigma.alpha ~ dunif(0, 100)</span></span>
+<span id="cb20-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="st">      for (j in 1:J){</span></span>
+<span id="cb20-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="st">        alpha[j] ~ dnorm(mu.alpha, tau.alpha)</span></span>
+<span id="cb20-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb20-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="st">    # beta</span></span>
+<span id="cb20-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="st">      beta ~ dnorm(0, .0001)</span></span>
+<span id="cb20-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="st">    # y priors</span></span>
+<span id="cb20-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="st">      sigma.y ~ dunif (0, 100)</span></span>
+<span id="cb20-23"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="st">      tau.y &lt;- 1/sigma.y^2</span></span>
+<span id="cb20-24"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb20-25"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="st">    # likelihood</span></span>
+<span id="cb20-26"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="st">    ###########################</span></span>
+<span id="cb20-27"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="st">    for (i in 1:n){</span></span>
+<span id="cb20-28"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="st">      mu.y[i] &lt;- alpha[county[i]] + beta * x[i]</span></span>
+<span id="cb20-29"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-29" aria-hidden="true" tabindex="-1"></a><span class="st">      y[i] ~ dnorm(mu.y[i], tau.y)</span></span>
+<span id="cb20-30"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-30" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb20-31"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-31" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb20-32"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-32" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;</span>, <span class="at">fill =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-33"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sink</span>()</span>
+<span id="cb20-34"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-34" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-35"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb20-36"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-36" aria-hidden="true" tabindex="-1"></a><span class="co"># implement model</span></span>
+<span id="cb20-37"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb20-38"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-38" aria-hidden="true" tabindex="-1"></a><span class="do">######################</span></span>
+<span id="cb20-39"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Call to JAGS</span></span>
+<span id="cb20-40"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-40" aria-hidden="true" tabindex="-1"></a><span class="do">######################</span></span>
+<span id="cb20-41"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-41" aria-hidden="true" tabindex="-1"></a>intrcpt_pred <span class="ot">=</span> rjags<span class="sc">::</span><span class="fu">jags.model</span>(</span>
+<span id="cb20-42"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;intrcpt_pred.R&quot;</span></span>
+<span id="cb20-43"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-43" aria-hidden="true" tabindex="-1"></a>  , <span class="at">data =</span> data</span>
+<span id="cb20-44"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-44" aria-hidden="true" tabindex="-1"></a>  , <span class="at">inits =</span> inits</span>
+<span id="cb20-45"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-45" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.chains =</span> <span class="dv">3</span></span>
+<span id="cb20-46"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-46" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.adapt =</span> <span class="dv">100</span></span>
+<span id="cb20-47"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-48"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-48" aria-hidden="true" tabindex="-1"></a>stats<span class="sc">::</span><span class="fu">update</span>(intrcpt_pred, <span class="at">n.iter =</span> <span class="dv">1000</span>, <span class="at">progress.bar =</span> <span class="st">&quot;none&quot;</span>)</span>
+<span id="cb20-49"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-49" aria-hidden="true" tabindex="-1"></a><span class="co"># save the coda object (more precisely, an mcmc.list object) to R</span></span>
+<span id="cb20-50"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-50" aria-hidden="true" tabindex="-1"></a>mlm_intrcpt_pred <span class="ot">=</span> rjags<span class="sc">::</span><span class="fu">coda.samples</span>(</span>
+<span id="cb20-51"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> intrcpt_pred</span>
+<span id="cb20-52"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-52" aria-hidden="true" tabindex="-1"></a>  , <span class="at">variable.names =</span> params</span>
+<span id="cb20-53"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-53" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.iter =</span> <span class="dv">1000</span></span>
+<span id="cb20-54"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-54" aria-hidden="true" tabindex="-1"></a>  , <span class="at">n.thin =</span> <span class="dv">1</span></span>
+<span id="cb20-55"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-55" aria-hidden="true" tabindex="-1"></a>  , <span class="at">progress.bar =</span> <span class="st">&quot;none&quot;</span></span>
+<span id="cb20-56"><a href="multilevel-linear-models-the-basics-ch-12.html#cb20-56" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="summary-of-the-marginal-posterior-distributions-of-the-parameters-1" class="section level4 hasAnchor" number="3.5.2.4">
+<h4><span class="header-section-number">3.5.2.4</span> Summary of the marginal posterior distributions of the parameters<a href="multilevel-linear-models-the-basics-ch-12.html#summary-of-the-marginal-posterior-distributions-of-the-parameters-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># summary</span></span>
+<span id="cb21-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-2" aria-hidden="true" tabindex="-1"></a>MCMCvis<span class="sc">::</span><span class="fu">MCMCsummary</span>(mlm_intrcpt_pred, <span class="at">params =</span> params[params <span class="sc">!=</span> <span class="st">&quot;alpha&quot;</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-3" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb21-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Bayesian: Varying-intercept multilevel model, floor of measurement predictor&quot;</span></span>
+<span id="cb21-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-5" aria-hidden="true" tabindex="-1"></a>    , <span class="at">digits =</span> <span class="dv">5</span></span>
+<span id="cb21-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb21-7" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+<span id="tab:unnamed-chunk-18">Table 3.4: </span>Bayesian: Varying-intercept multilevel model, floor of measurement predictor
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+2.5%
+</th>
+<th style="text-align:right;">
+50%
+</th>
+<th style="text-align:right;">
+97.5%
+</th>
+<th style="text-align:right;">
+Rhat
+</th>
+<th style="text-align:right;">
+n.eff
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+beta
+</td>
+<td style="text-align:right;">
+-0.69408
+</td>
+<td style="text-align:right;">
+0.07026
+</td>
+<td style="text-align:right;">
+-0.83349
+</td>
+<td style="text-align:right;">
+-0.69416
+</td>
+<td style="text-align:right;">
+-0.55764
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1502
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mu.alpha
+</td>
+<td style="text-align:right;">
+1.46351
+</td>
+<td style="text-align:right;">
+0.05304
+</td>
+<td style="text-align:right;">
+1.36035
+</td>
+<td style="text-align:right;">
+1.46300
+</td>
+<td style="text-align:right;">
+1.56758
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+857
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sigma.y
+</td>
+<td style="text-align:right;">
+0.75741
+</td>
+<td style="text-align:right;">
+0.01819
+</td>
+<td style="text-align:right;">
+0.72298
+</td>
+<td style="text-align:right;">
+0.75704
+</td>
+<td style="text-align:right;">
+0.79382
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1759
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sigma.alpha
+</td>
+<td style="text-align:right;">
+0.33626
+</td>
+<td style="text-align:right;">
+0.04789
+</td>
+<td style="text-align:right;">
+0.24771
+</td>
+<td style="text-align:right;">
+0.33418
+</td>
+<td style="text-align:right;">
+0.43834
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+421
+</td>
+</tr>
+</tbody>
+</table>
+<p>Compare fully Bayesian approach to linear mixed-effects model (via Restricted Maximum Likelihood [REML])</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compare</span></span>
+<span id="cb22-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-2" aria-hidden="true" tabindex="-1"></a>MCMCvis<span class="sc">::</span><span class="fu">MCMCsummary</span>(mlm_intrcpt_pred, <span class="at">params =</span> <span class="st">&quot;alpha&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb22-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="st">&quot;mean&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">8</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(<span class="fu">coef</span>(M1)<span class="sc">$</span>county[<span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>,<span class="dv">1</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">Bayesian=</span><span class="dv">1</span>, <span class="at">LMM=</span><span class="dv">2</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-8" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb22-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;alpha predictions Bayesian vs. LMM&quot;</span></span>
+<span id="cb22-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-10" aria-hidden="true" tabindex="-1"></a>    , <span class="at">digits =</span> <span class="dv">5</span></span>
+<span id="cb22-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb22-12" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+<span id="tab:unnamed-chunk-19">Table 3.5: </span>alpha predictions Bayesian vs. LMM
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Bayesian
+</th>
+<th style="text-align:right;">
+LMM
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+alpha[1]
+</td>
+<td style="text-align:right;">
+1.18900
+</td>
+<td style="text-align:right;">
+1.19150
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[2]
+</td>
+<td style="text-align:right;">
+0.92747
+</td>
+<td style="text-align:right;">
+0.92765
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[3]
+</td>
+<td style="text-align:right;">
+1.49063
+</td>
+<td style="text-align:right;">
+1.47921
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[4]
+</td>
+<td style="text-align:right;">
+1.50568
+</td>
+<td style="text-align:right;">
+1.50450
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[5]
+</td>
+<td style="text-align:right;">
+1.44939
+</td>
+<td style="text-align:right;">
+1.44615
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[6]
+</td>
+<td style="text-align:right;">
+1.49025
+</td>
+<td style="text-align:right;">
+1.48018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[7]
+</td>
+<td style="text-align:right;">
+1.85705
+</td>
+<td style="text-align:right;">
+1.85813
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alpha[8]
+</td>
+<td style="text-align:right;">
+1.68957
+</td>
+<td style="text-align:right;">
+1.68277
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="sort-the-alpha_j-by-number-of-obs.-1" class="section level4 hasAnchor" number="3.5.2.5">
+<h4><span class="header-section-number">3.5.2.5</span> Sort the <span class="math inline">\(\alpha_{j}\)</span> by number of obs.<a href="multilevel-linear-models-the-basics-ch-12.html#sort-the-alpha_j-by-number-of-obs.-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Replicate Figure 12.1 (b) (p.253)</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-1" aria-hidden="true" tabindex="-1"></a>dta_temp <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(</span>
+<span id="cb23-2"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-2" aria-hidden="true" tabindex="-1"></a>  radon_mn <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">count</span>(county_index) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb23-3"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-3" aria-hidden="true" tabindex="-1"></a>  , MCMCvis<span class="sc">::</span><span class="fu">MCMCpstr</span>(mlm_intrcpt_pred, <span class="at">params =</span> <span class="st">&quot;alpha&quot;</span>, <span class="at">func =</span> <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">data.frame</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb23-5"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-5" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">rename_with</span>(</span>
+<span id="cb23-6"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-6" aria-hidden="true" tabindex="-1"></a>        <span class="sc">~</span> <span class="fu">tolower</span>(<span class="fu">gsub</span>(<span class="st">&quot;.&quot;</span>, <span class="st">&quot;&quot;</span>, .x, <span class="at">fixed =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb23-7"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-7" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb23-8"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-9"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-9" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(n) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-10"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-10" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">n_low_hi =</span> dplyr<span class="sc">::</span><span class="fu">row_number</span>() <span class="sc">%&gt;%</span> <span class="fu">as.factor</span>())</span>
+<span id="cb23-11"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dta_temp) <span class="sc">+</span></span>
+<span id="cb23-12"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(</span>
+<span id="cb23-13"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">yintercept =</span> MCMCvis<span class="sc">::</span><span class="fu">MCMCpstr</span>(mlm_intrcpt_pred, <span class="at">params =</span> <span class="st">&quot;mu.alpha&quot;</span>, <span class="at">func =</span> median) <span class="sc">%&gt;%</span> <span class="fu">unlist</span>()</span>
+<span id="cb23-14"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-14" aria-hidden="true" tabindex="-1"></a>    , <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span></span>
+<span id="cb23-15"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-15" aria-hidden="true" tabindex="-1"></a>    , <span class="at">lwd =</span> <span class="dv">1</span></span>
+<span id="cb23-16"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-16" aria-hidden="true" tabindex="-1"></a>    , <span class="at">color =</span> <span class="st">&quot;gray40&quot;</span></span>
+<span id="cb23-17"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-18"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb23-19"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> n_low_hi, <span class="at">y =</span> alpha50)</span>
+<span id="cb23-20"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-21"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(</span>
+<span id="cb23-22"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> n_low_hi, <span class="at">ymin =</span> alpha25, <span class="at">ymax =</span> alpha75)</span>
+<span id="cb23-23"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-24"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">2.5</span>)) <span class="sc">+</span></span>
+<span id="cb23-25"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(latex2exp<span class="sc">::</span><span class="fu">TeX</span>(<span class="st">&quot;$</span><span class="sc">\\</span><span class="st">hat{</span><span class="sc">\\</span><span class="st">alpha}_{j}$&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb23-26"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;# Obs.&quot;</span>) <span class="sc">+</span></span>
+<span id="cb23-27"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb23-28"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Median model intercept prediction for each county (j)&quot;</span></span>
+<span id="cb23-29"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-29" aria-hidden="true" tabindex="-1"></a>    , <span class="at">subtitle =</span> <span class="st">&quot;Varying-intercept multilevel model, floor of measurement predictor&quot;</span></span>
+<span id="cb23-30"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-31"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb23-32"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb23-33"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb23-34"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-34" aria-hidden="true" tabindex="-1"></a>    , <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb23-35"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-35" aria-hidden="true" tabindex="-1"></a>    , <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb23-36"><a href="multilevel-linear-models-the-basics-ch-12.html#cb23-36" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="MLM_GelmanHill_files/figure-html/unnamed-chunk-20-1.png" width="960" /></p>
+
+</div>
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="the-data.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

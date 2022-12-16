@@ -24,11 +24,10 @@ link-citations: true
 description: "Using the bookdown package to write a book for Data Analysis Using Regression and Multilevel/Hierarchical Models. The output format for this example is bookdown::gitbook."
 ---
 
-# Source
-
-Gelman, A., & Hill, J. (2007). *Data Analysis Using Regression and Multilevel/Hierarchical Models*. Cambridge University Press.
-
 # Motivation
+
+**Source:**
+Gelman, A., & Hill, J. (2007). *Data Analysis Using Regression and Multilevel/Hierarchical Models*. Cambridge University Press.
 
 The following multilevel modelling exercises are from [Gelman & Hill (2007)](http://www.stat.columbia.edu/~gelman/arm/). The objective is to learn how to fit models with different group- and treatment-level hierarchies allowing for many varying intercepts and slopes.
 
