@@ -12,8 +12,6 @@ knitr::opts_chunk$set(
   , fig.width = 10
   , fig.height = 7
 )
-# qualitative color pallette
-my_color_pal_qual <- function(n) viridis::turbo(n = n * 4)[which(seq(1,n * 4,1) %% 4 == 0)]
 ```
 
 ## Setup
@@ -570,7 +568,7 @@ where $x_i$ is the house-level first-floor indicator and $u_j$ is the county-lev
 
 The lmer() function only accepts predictors at the individual level, so we have converted $u_j$ to $u^{full}_i = u_{j[i]}$ (with the variable county playing the role of the indexing $j[i]$), to pull out the uranium level of the county where house $i$ is located
 
-```{r}
+```{r, include=FALSE, eval=FALSE}
 srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
 cty <- cty <- read.table ("http://www.stat.columbia.edu/~gelman/arm/examples/radon/cty.dat", header=TRUE, sep=",")
 usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]

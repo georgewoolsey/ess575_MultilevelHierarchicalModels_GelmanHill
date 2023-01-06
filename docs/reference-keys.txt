@@ -26,3 +26,5 @@ jags-model-1
 implement-jags-model-1
 summary-of-the-marginal-posterior-distributions-of-the-parameters-1
 sort-the-alpha_j-by-number-of-obs.-1
+group-level-predictors-p.-265
+using-lme4lmer-1
