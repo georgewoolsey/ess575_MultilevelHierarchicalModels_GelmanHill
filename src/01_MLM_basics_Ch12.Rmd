@@ -304,7 +304,7 @@ lm(data = radon_mn, formula = y ~ x + factor(county_index) - 1) %>%
   kableExtra::column_spec(1, bold = FALSE, width = "3em")
 ```
 
-## MLM Partial pooling with predictors (p. 254)
+## Multilevel (partial pooling) model with predictors (p. 254)
 
 The simplest multilevel model for the radon data with the floor predictor can be written as:
 
@@ -331,8 +331,9 @@ with their mean $\mu_{\alpha}$ and standard deviation $\sigma^{2}_{\alpha}$ esti
 M0 <- lme4::lmer(data = radon_mn, formula = y ~ 1 + (1 | county))
 summary(M0)
 
+## Varying-intercept model w/ a predictor
 ## Including x as a predictor
-# we can allow the slope to vary by specifying (1+x|county)
+  # we can allow the slope to vary as well by specifying (1+x|county)
 M1 <- lme4::lmer(data = radon_mn, formula = y ~ x + (1 | county))
 summary(M1)
 
@@ -343,10 +344,15 @@ coef(M1)$county[1:3,1]
 fixef(M1)
 ranef(M1)$county[1:3,1]
 
-# check
+# check intercept match for county 1
 fixef(M1)[[1]] + ranef(M1)$county[1,1]
 coef(M1)$county[1,1]
 ```
+
+The estimated average regression line for all the counties is `r paste0("y = ", round(fixef(M1)[[1]],3), ifelse(fixef(M1)[[2]]<0, " - ", " + "), round(abs(fixef(M1)[[2]]),3), "x")`
+
+* $\hat{\mu_{\alpha}}$ = `r round(fixef(M1)[[1]],3)`
+* $\hat{\beta}$ = `r round(fixef(M1)[[2]],3)`
 
 ### Bayesian
 
@@ -551,7 +557,7 @@ remove(list = ls()[grep("_temp",ls())])
 gc()
 ```
 
-## Group-level predictors (p. 265)
+## Group-level predictors (p. 265){#grp_pred}
 
 Adding a group-level predictor to improve inference for group coefficients $\alpha_j$. This multilevel model includes predictors at the group (e.g. county) as well as the individual (e.g. house) level.
 
@@ -566,21 +572,283 @@ where $x_i$ is the house-level first-floor indicator and $u_j$ is the county-lev
 
 *Approximate routines such as lmer() tend to work well when the sample size and number of groups is moderate to large, as in the radon models. When the number of groups is small, or the model becomes more complicated, it can be useful to switch to Bayesian inference, using the Bugs program, to better account for uncertainty in model fitting.* (p. 262)
 
-The lmer() function only accepts predictors at the individual level, so we have converted $u_j$ to $u^{full}_i = u_{j[i]}$ (with the variable county playing the role of the indexing $j[i]$), to pull out the uranium level of the county where house $i$ is located
+#### Data prep 
 
-```{r, include=FALSE, eval=FALSE}
-srrs2.fips <- srrs2$stfips*1000 + srrs2$cntyfips
-cty <- cty <- read.table ("http://www.stat.columbia.edu/~gelman/arm/examples/radon/cty.dat", header=TRUE, sep=",")
-usa.fips <- 1000*cty[,"stfips"] + cty[,"ctfips"]
-usa.rows <- match (unique(srrs2.fips[mn]), usa.fips)
-uranium <- cty[usa.rows,"Uppm"]
-u <- log (uranium)
+Attach measurements of uranium at the county level to data of radon measurements at the individual house level.
 
-
-u.full <- u[county]
-M2 <- lmer (y ~ x + u.full + (1 | county))
-display (M2)
+```{r}
+# combine state and county fips in full radon data
+srrs2 <- srrs2 %>% 
+  dplyr::mutate(fullfips = stfips*1000 + cntyfips)
+radon_mn <- radon_mn %>% 
+  dplyr::mutate(fullfips = stfips*1000 + cntyfips)
+# load county data
+cty <- read.table ("http://www.stat.columbia.edu/~gelman/arm/examples/radon/cty.dat", header=TRUE, sep=",") %>% 
+  dplyr::mutate(fullfips = stfips*1000 + ctfips) %>% 
+  # there are duplicates in this data
+  dplyr::group_by(fullfips) %>% 
+  dplyr::filter(dplyr::row_number()==1) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::mutate(u = log(Uppm))
+# glimpse
+cty %>% dplyr::glimpse()
+# join to individual, house radon measurement data
+srrs2 <- srrs2 %>% 
+  dplyr::left_join(cty %>% dplyr::select(fullfips, u), by = c("fullfips"="fullfips"))
+radon_mn <- radon_mn %>% 
+  dplyr::left_join(cty %>% dplyr::select(fullfips, u), by = c("fullfips"="fullfips"))
+# # unique uranium by county index 1:85
+u <- radon_mn %>% 
+  dplyr::group_by(county_index) %>% 
+  summarize(u = dplyr::first(u)) %>% 
+  ungroup() %>% 
+  dplyr::arrange(county_index)
 ```
 
+Varying-intercept model with predictors (i.e. soil uranium measuement) at the group level (i.e. county) 
 
+```{r, results='asis'}
+## Varying-intercept model w/ group-level predictors
+# M1 <- lme4::lmer(data = radon_mn, formula = y ~ x + (1 | county))
+M2 <- lme4::lmer(data = radon_mn, formula = y ~ x + u + (1 | county))
+summary(M2)
 
+#estimated regression coefficicents
+coef(M2)$county[1:3,]
+
+# fixed and random effects
+fixef(M2)
+ranef(M2)$county[1:3,]
+
+# check intercept match for county 1
+fixef(M2)[[1]] + ranef(M2)$county[1,1]
+coef(M2)$county[1,1]
+```
+
+The estimated average regression line for all the counties is `r paste0("y = ", round(fixef(M2)[[1]],3), ifelse(fixef(M2)[[2]]<0, " - ", " + "), round(abs(fixef(M2)[[2]]),3), "x", ifelse(fixef(M2)[[3]]<0, " - ", " + "), round(abs(fixef(M2)[[3]]),3), "u")` (see p.268)
+
+* $\hat{\beta}$ = `r round(fixef(M2)[["x"]],3)`
+* $\hat{\gamma_{0}}$ = `r round(fixef(M2)["(Intercept)"],3)`
+* $\hat{\gamma_{1}}$ = `r round(fixef(M2)["u"],3)`
+
+### Bayesian
+
+#### Data and Initial conditions
+
+```{r}
+# varying-intercept model, no predictors
+## data for jags
+data <- list(
+  n = nrow(radon_mn)
+  , J = radon_mn$county %>% unique() %>% length()
+  , y = radon_mn$log.radon %>% as.double()
+  , x = radon_mn$x %>% as.double()
+  , county = radon_mn$county_index %>% as.double()
+  , u = u$u %>% as.double()
+)
+## inits for jags
+inits <- function(){
+  list(
+    alpha = rnorm(n = data$J, mean = 0, sd = 1) # county-level intercept (n = length of # counties)
+    , beta = rnorm(1, mean = 0, sd = 1)
+    , gamma_0 = rnorm(1, mean = 0, sd = 1)
+    , gamma_1 = rnorm(1, mean = 0, sd = 1)
+    , sigma.alpha = runif(n = 1, min = 0, max = 1)
+    , sigma.y = runif(n = 1, min = 0, max = 1)
+  )
+}
+# define parameters to return from MCMC
+params <- c ("alpha", "beta", "gamma_0", "gamma_1", "sigma.y", "sigma.alpha")
+```
+
+#### JAGS Model
+
+Recall model defined [above](#grp_pred)
+
+Write out the JAGS code for the model.
+
+```{r, eval=FALSE}
+## JAGS Model
+model {
+  ###########################
+  # priors
+  ###########################
+  # alpha priors
+    gamma_0 ~ dnorm (0, .0001)
+    gamma_1 ~ dnorm (0, .0001)
+    sigma.alpha ~ dunif(0, 100)
+    tau.alpha <- 1/sigma.alpha^2
+  # beta
+    beta ~ dnorm(0, .0001)
+  # y priors
+    sigma.y ~ dunif (0, 100)
+    tau.y <- 1/sigma.y^2
+  ###########################
+  # likelihood
+  ###########################
+  # intercept (alpha) likelihood
+    # represent the effect of soil carbon ...
+      # ...on the intercept using the deterministic model below to predict alpha_j
+    for(j in 1:J){
+      mu_alpha[j] <- gamma_0 + gamma_1 * u[j]
+      alpha[j] ~ dnorm(mu_alpha[j], tau.alpha)
+    }
+  # y
+  for (i in 1:n){
+    mu.y[i] <- alpha[county[i]] + beta * x[i]
+    y[i] ~ dnorm(mu.y[i], tau.y)
+  }
+}
+```
+
+#### Implement JAGS Model
+
+```{r}
+##################################################################
+# insert JAGS model code into an R script
+##################################################################
+{ # Extra bracket needed only for R markdown files - see answers
+  sink("intrcpt_grp_pred.R") # This is the file name for the jags code
+  cat("
+  ## JAGS Model
+  model {
+    ###########################
+    # priors
+    ###########################
+    # alpha priors
+      gamma_0 ~ dnorm (0, .0001)
+      gamma_1 ~ dnorm (0, .0001)
+      sigma.alpha ~ dunif(0, 100)
+      tau.alpha <- 1/sigma.alpha^2
+    # beta
+      beta ~ dnorm(0, .0001)
+    # y priors
+      sigma.y ~ dunif (0, 100)
+      tau.y <- 1/sigma.y^2
+    ###########################
+    # likelihood
+    ###########################
+    # intercept (alpha) likelihood
+      # represent the effect of soil carbon ...
+        # ...on the intercept using the deterministic model below to predict alpha_j
+      for(j in 1:J){
+        mu_alpha[j] <- gamma_0 + gamma_1 * u[j]
+        alpha[j] ~ dnorm(mu_alpha[j], tau.alpha)
+      }
+    # y
+    for (i in 1:n){
+      mu.y[i] <- alpha[county[i]] + beta * x[i]
+      y[i] ~ dnorm(mu.y[i], tau.y)
+    }
+  }
+  ", fill = TRUE)
+  sink()
+}
+##################################################################
+# implement model
+##################################################################
+######################
+# Call to JAGS
+######################
+intrcpt_grp_pred = rjags::jags.model(
+  file = "intrcpt_grp_pred.R"
+  , data = data
+  , inits = inits
+  , n.chains = 3
+  , n.adapt = 100
+)
+stats::update(intrcpt_grp_pred, n.iter = 1000, progress.bar = "none")
+# save the coda object (more precisely, an mcmc.list object) to R
+mlm_intrcpt_grp_pred = rjags::coda.samples(
+  model = intrcpt_grp_pred
+  , variable.names = params
+  , n.iter = 1000
+  , n.thin = 1
+  , progress.bar = "none"
+)
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
+remove(list = ls()[grep("_temp",ls())])
+gc()
+```
+
+#### Summary of the marginal posterior distributions of the parameters
+
+```{r, results='asis'}
+# summary
+MCMCvis::MCMCsummary(mlm_intrcpt_grp_pred, params = params[params != "alpha"]) %>% 
+  kableExtra::kable(
+    caption = "Bayesian: Varying-intercept multilevel model, floor of measurement predictor + county-level (grp) uranium"
+    , digits = 5
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12)
+```
+
+Compare fully Bayesian approach to linear mixed-effects model (via Restricted Maximum Likelihood [REML]) 
+
+```{r, results='asis'}
+# compare
+MCMCvis::MCMCsummary(mlm_intrcpt_grp_pred, params = "alpha") %>% 
+  data.frame() %>% 
+  dplyr::select("mean") %>% 
+  dplyr::slice_head(n = 8) %>% 
+  dplyr::bind_cols(coef(M2)$county[1:8,"(Intercept)"]) %>% 
+  dplyr::rename(Bayesian=1, LMM=2) %>% 
+  kableExtra::kable(
+    caption = "alpha predictions Bayesian vs. LMM (lme4::lmer)"
+    , digits = 5
+  ) %>% 
+  kableExtra::kable_styling(font_size = 12)
+```
+
+#### Estimated $\alpha_{j}$ versus uranium measurment
+
+Replicate Figure 12.6 for the multilevel model fit to radon data including uranium as a county-level predictor (p.266)
+
+```{r}
+MCMCvis::MCMCpstr(mlm_intrcpt_grp_pred, params = "gamma_0", func = median) %>% unlist() + 1
+
+dta_temp <- dplyr::bind_cols(
+  u
+  , MCMCvis::MCMCpstr(mlm_intrcpt_grp_pred, params = "alpha", func = function(x) quantile(x, c(0.25, 0.5, 0.75))) %>%
+      data.frame() %>% 
+      dplyr::rename_with(
+        ~ tolower(gsub(".", "", .x, fixed = TRUE))
+      )
+  ) %>% 
+  dplyr::arrange(county_index)
+ggplot(dta_temp, mapping = aes(x = u)) +
+  geom_abline(
+    intercept = MCMCvis::MCMCpstr(mlm_intrcpt_grp_pred, params = "gamma_0", func = median) %>% unlist()
+    , slope = MCMCvis::MCMCpstr(mlm_intrcpt_grp_pred, params = "gamma_1", func = median) %>% unlist()
+    , linetype = "dashed"
+    , lwd = 1
+    , color = "gray40"
+  ) +
+  geom_linerange(
+    mapping = aes(ymin = alpha25, ymax = alpha75)
+  ) +
+  geom_point(
+    mapping = aes(y = alpha50)
+  ) +
+  # scale_y_continuous(limits = c(0,2.5)) +
+  ylab(latex2exp::TeX("$\\hat{\\alpha}_{j}$")) + 
+  xlab("log(u)") +
+  labs(
+    title = "Median model intercept prediction for each county (j) versus county-level uranium measurement"
+  ) +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_blank()
+    , axis.ticks.x = element_blank()
+    , panel.grid = element_blank()
+  )
+```
+
+Estimated county coefficients $\alpha_j$ plotted versus county-level uranium measurement $u_j$, along with the estimated multilevel regression line $\alpha_j = \gamma_{0} + \gamma_{1} \cdot u_j$. The county coefficients roughly follow the line but not exactly; the deviation of the coefficients from the line is captured in $\sigma_{\alpha}$, the standard deviation of the errors in the county-level regression.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
+remove(list = ls()[grep("_temp",ls())])
+gc()
+```

@@ -5,12 +5,10 @@
     # priors
     ###########################
     # alpha priors
-      mu.alpha ~ dnorm(0, .0001)
-      tau.alpha <- 1/sigma.alpha^2
+      gamma_0 ~ dnorm (0, .0001)
+      gamma_1 ~ dnorm (0, .0001)
       sigma.alpha ~ dunif(0, 100)
-      for (j in 1:J){
-        alpha[j] ~ dnorm(mu.alpha, tau.alpha)
-      }
+      tau.alpha <- 1/sigma.alpha^2
     # beta
       beta ~ dnorm(0, .0001)
     # y priors
@@ -19,6 +17,14 @@
     ###########################
     # likelihood
     ###########################
+    # intercept (alpha) likelihood
+      # represent the effect of soil carbon ...
+        # ...on the intercept using the deterministic model below to predict alpha_j
+      for(j in 1:J){
+        mu_alpha[j] <- gamma_0 + gamma_1 * u[j]
+        alpha[j] ~ dnorm(mu_alpha[j], tau.alpha)
+      }
+    # y
     for (i in 1:n){
       mu.y[i] <- alpha[county[i]] + beta * x[i]
       y[i] ~ dnorm(mu.y[i], tau.y)
