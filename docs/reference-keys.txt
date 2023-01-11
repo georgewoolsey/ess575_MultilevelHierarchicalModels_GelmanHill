@@ -37,3 +37,8 @@ jags-model-2
 implement-jags-model-2
 summary-of-the-marginal-posterior-distributions-of-the-parameters-2
 estimated-alpha_j-versus-uranium-measurment
+multilevel-linear-models-varying-slopes-non-nested-models-and-other-complexities-ch-13
+setup-1
+load-data-1
+varying-intercepts-and-slopes-p.-279
+using-lme4lmer-p.-279
